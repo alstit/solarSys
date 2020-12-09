@@ -1,11 +1,20 @@
+#pragma once
 #include <glimac/SDLWindowManager.hpp>
 #include <glm/glm.hpp>
 #include <queue> 
+#include <vector>
+#include <glm/gtx/vector_angle.hpp>
+#include <solarSys/const.hpp>
 
-float UNITEASTRONOMIQUE = 149.6e9;
 
 
 using namespace glm;
+
+struct PreviousPos{
+    glm::vec3 Pos;
+    glm::vec3 speed;
+    float time;
+};
 
 
 class Body
@@ -14,8 +23,7 @@ class Body
         float masse;
         vec3 position;
         vec3 initSpeed;
-        vec3 positionScreen ;
-        std::queue<glm::vec3> previousPos;
+        std::vector<PreviousPos> previousPos;
 
         Body( float scale,float masse,vec3 position,vec3 initSpeed)
         {
@@ -24,18 +32,37 @@ class Body
             this->position = position;
             this->initSpeed = initSpeed;
 
-        }
+        };
 
-        glm::mat4 viewMatrix( SDLWindowManager* windowManager,glm::mat4 MVMatrix)
+        std::vector<glm::mat4> viewMatrixTrail( SDLWindowManager* windowManager,glm::mat4 MVMatrix)
+        {
+            std::vector<glm::mat4> matrix;
+            glm::mat4 amatrix;
+            float theta;
+            glm::vec3 ascale = glm::vec3(1,(float)TRAIL_RENDER_FACTOR,1)*this->scale/UNITEASTRONOMIQUE;
+            for (int i=0;i<this->previousPos.size();i++)
+            {
+                amatrix= translate(MVMatrix,this->previousPos[i].Pos/UNITEASTRONOMIQUE);
+                theta =  glm::orientedAngle(glm::vec3(0,1,0),glm::normalize(this->previousPos[i].speed),glm::vec3(0,0,1));//////// update direction vector according to randomness
+                //amatrix= translate(MVMatrix,0.5f*glm::vec3(cos(theta),sin(theta)*(float)TRAIL_RENDER_FACTOR,1)*this->scale/UNITEASTRONOMIQUE);
+                amatrix = rotate(amatrix, theta, glm::vec3(0,0,1));
+                amatrix = glm::scale(amatrix,ascale);
+                matrix.push_back(amatrix);
+            }
+            return matrix;
+        };
+
+        glm::mat4 viewMatrixBody( SDLWindowManager* windowManager,glm::mat4 MVMatrix)
         {
             MVMatrix = translate(MVMatrix,this->position/UNITEASTRONOMIQUE);
             MVMatrix = rotate(MVMatrix, windowManager->getTime(), glm::vec3(0,1,0));
             MVMatrix = glm::scale(MVMatrix, this->scale/UNITEASTRONOMIQUE*glm::vec3(1, 1, 1));
-
             return MVMatrix;
         }
+        
 
-        void update(float dt, std::vector<Body> bodyVect,glm::vec3 aforce);
+
+        void update(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce);
 
 
 
@@ -57,7 +84,7 @@ glm::vec3 gforce(Body p1,Body p2){
 };
 
 
-void Body::update(float dt, std::vector<Body> bodies,glm::vec3 aforce)
+void Body::update(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce)
 {
     glm::vec3 Force = aforce;
 
@@ -69,8 +96,9 @@ void Body::update(float dt, std::vector<Body> bodies,glm::vec3 aforce)
     this->initSpeed+=Force/(float)(bodies.size()+1)/this->masse*(float)dt;
     this->position+=this->initSpeed*(float)dt;
 
-    this->previousPos.push(this->position);
-    if(this->previousPos.size()>10){this->previousPos.pop();}
+    PreviousPos apreviousPos = {this->position,this->initSpeed,t};
+    this->previousPos.push_back(apreviousPos);
+    if(this->previousPos.size()>TRAILSIZE*10*length(this->position)/UNITEASTRONOMIQUE){this->previousPos.erase(previousPos.begin());}
 
 
 }
