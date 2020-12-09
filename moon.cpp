@@ -13,83 +13,13 @@
 #include <solarSys/Body.hpp>
 #include <glm/glm.hpp>
 #include <limits>
+#include <SDL/SDL.h>
+#include <stdlib.h> 
 
 using namespace glimac;
 using namespace std;
 
-double scale=100;
 
-
-
-
-// vec.pos = 3d mass
-
-glm::vec3 gforce(glm::vec3 p1,glm::vec3 p2){
-    // Calculate the gravitational force exerted on p1 by p2.
-    double G = 1 ; // Change to 6.67e-11 to use real-world values.
-    // Calculate distance vector between p1 and p2.
-    float r_mag = glm::length(p1-p2);
-    glm::vec3 r_hat = glm::normalize(p1-p2);
-    // Calculate force magnitude.
-    //float force_mag = G*10000*10000/(r_mag*r_mag) ;///1000 = masse
-    float force_mag = 10000000;
-    //Calculate force vector.
-    glm::vec3 force_vec = -force_mag*r_hat;
-    
-    return force_vec;
-}
-
-void openglRender(Engine* engine,glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix,Sphere asphere,GLuint* vao){
-
-        glUniformMatrix4fv( 	engine->uMVMatrix,
-                                    1,
-                                    GL_FALSE,
-                                    glm::value_ptr(MVMatrix));
-        glUniformMatrix4fv( 	engine->uMVPMatrix,
-                                    1,
-                                    GL_FALSE,
-                                    glm::value_ptr(ProjMatrix*MVMatrix));
-        glUniformMatrix4fv( 	engine->uNormalMatrix,
-                                    1,
-                                    GL_FALSE,
-                                    glm::value_ptr(NormalMatrix));
-        /*glUniform3f( engine.uKd,
-                    Kd[0],Kd[1],Kd[2]);
-        glUniform3f( engine.uKs,
-                    Kd[0],Kd[1],Kd[2]);
-        glUniform3f( engine.uLightDir_vs,
-                    LightDir_vs[0],LightDir_vs[1],LightDir_vs[2]);
-        glUniform3f( engine.uLightIntensity,
-                    LightIntensity[0],LightIntensity[1],LightIntensity[2]);
-        glUniform1f(engine.uShininess,Shininess);   */                                                     
-
-        glBindVertexArray(*vao);
-        glDrawArrays(GL_TRIANGLES,0,asphere.getVertexCount());
-        glBindVertexArray(0);
-};
-
-
-void openglBindBuff(Sphere asphere,GLuint* vbo,GLuint* vao)
-{
-
-    glGenBuffers(1,vbo);
-    glBindBuffer(GL_ARRAY_BUFFER,*vbo);
-    glBufferData(GL_ARRAY_BUFFER,asphere.getVertexCount()*sizeof(Sphere),asphere.getDataPointer(),GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER,0);
-
-    glGenVertexArrays(1,vao);
-    glBindVertexArray(*vao);
-    glBindBuffer(GL_ARRAY_BUFFER,*vbo);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(ShapeVertex),(void*)offsetof(ShapeVertex,position));
-    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(ShapeVertex),(void*)offsetof(ShapeVertex,normal));
-    glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(ShapeVertex),(void*)offsetof(ShapeVertex,texCoords));
-    glBindVertexArray(0);
-}
 
 
 int main(int argv,char** argc) {
@@ -112,19 +42,18 @@ int main(int argv,char** argc) {
 
     Engine engine(applicationPath);
 
-    engine.m_Program.use();
+    
 
     FreeflyCamera freeCamera = FreeflyCamera();
     TrackballCamera ballCamera = TrackballCamera();
-    //freeCamera.moveFront(-300000);
+
 
     
 
-    Sphere asphere = Sphere(10, 64, 64);
+
     
-    GLuint* vbo = new GLuint();
-    GLuint* vao = new GLuint();
-    openglBindBuff(asphere,vbo,vao);
+
+
 
 
 
@@ -132,26 +61,33 @@ int main(int argv,char** argc) {
     glEnable(GL_DEPTH_TEST);
     glm::mat4 ProjMatrix,MVMatrix,NormalMatrix;
     float fov = 70;
-    ProjMatrix = glm::perspective(glm::radians(fov),4.f/3.f,0.1f,(float)1275e4);
-
-    double angle = 0;
-    int sign =0;
-    double initDistance = 140000;
-    double g = -1000;
-    double v0 = 0;
-glm::vec3 moonPosition = glm::vec3(initDistance,0,0);
-        double PreviousT =0;
-                glm::vec3 earthQmvt = glm::vec3(0,0,0);
-        glm::vec3 moonQmvt = glm::vec3(0,10000000,10010);
+    ProjMatrix = glm::perspective(glm::radians(fov),4.f/3.f,(float)0.00000930951,(float)20);
 
 
 
-    Body earth = Body(10,5.97e24,vec3(0,10000,0),vec3(0,0,0));
-    cout<<earth.scale/tan(glm::radians(fov/4.))<<endl;
-    //ballCamera.moveFront(earth.scale+earth.scale/tan(glm::radians(fov/4.)));
-    ballCamera.moveFront(20);
+
+
+    float graphicScale = 30;
+    srand (time(NULL));
+    
+    std::vector<Body>  bodies;
+
+    bodies.push_back( Body(1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0)));
+    float theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    bodies.push_back( Body(4879.e3*graphicScale/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)49.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    theta =theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    bodies.push_back( Body(12104.e3*graphicScale/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    bodies.push_back( Body(12756.e3*graphicScale/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    freeCamera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
+
+
+
 
     // Application loop:
+    glm::ivec2 prevMousePos = windowManager.getMousePosition();
+    double PreviousT =0;
+
     bool done = false;
     while(!done) 
     {
@@ -164,18 +100,7 @@ glm::vec3 moonPosition = glm::vec3(initDistance,0,0);
             {
                 done = true; // Leave the loop after this iteration
             }
-            if(event.type == SDL_MOUSEWHEEL)
-            {
-                if(event.wheel.y > 0) // scroll up
-                {
-                    freeCamera.moveFront(1000e3);
-                }
-                else if(event.wheel.y < 0) // scroll down
-                {
-                    freeCamera.moveFront(-1000e3);
-
-                }
-            }
+            
 
             if(windowManager.isKeyPressed(SDLK_z))
             {   
@@ -198,11 +123,19 @@ glm::vec3 moonPosition = glm::vec3(initDistance,0,0);
             if(windowManager.isMouseButtonPressed(SDL_BUTTON_RIGHT))
             {
                 
-                //glm::ivec2 mousePos = windowManager.getMousePosition();
+                glm::ivec2 mousePos = windowManager.getMousePosition();
                 //camera.rotateLeft(mousePos[1]*.0001);
                 //camera.rotateUp(mousePos[0]*.001);
             }
+            if(windowManager.isKeyPressed(SDLK_LCTRL))
+            {
+                glm::ivec2 mousePos = windowManager.getMousePosition();
+                freeCamera.moveFront((-mousePos[1]+prevMousePos[1])*0.0000930951);
+                
+            }
+
         }
+        prevMousePos = windowManager.getMousePosition();
 
         /*********************************
          * HERE SHOULD COME THE RENDERING CODE
@@ -210,86 +143,43 @@ glm::vec3 moonPosition = glm::vec3(initDistance,0,0);
 
 
 
-                ///////////////////////////////////////////////lighting model 
-
-/*
-        LightDir_vs =  vec4(10,10,10,0) ;
-        LightIntensity =glm::vec4(5,5,5,0);
-        Kd =  glm::vec4(1,1,1,0);
-        Ks =  glm::vec4(1,1,1,0);
-        Shininess = 2;*/
-
-         ///////////////////////////////////////////draw planet////////////////
-        engine.m_Program.use();
-
-
-        //MVMatrix = glm::translate(glm::mat4(),glm::vec3(0,-10000,-10));
-        MVMatrix = freeCamera.getViewMatrix() ;
-        MVMatrix = translate(MVMatrix,earth.position);
-        MVMatrix = rotate(MVMatrix, windowManager.getTime(), glm::vec3(0,1,0));
-        MVMatrix = glm::scale(MVMatrix, (float)earth.scale*glm::vec3(1, 1, 1));
-        NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        openglRender(&engine,MVMatrix,ProjMatrix,NormalMatrix,asphere,vao);
 
-
-
-
-
-
-
-
-
-
-        ////// draw moon//////
-
-       // Kd =  glm::vec4(1,1,1,0);
-        //Ks =  glm::vec4(1,1,1,0);
-        //Shininess = 0.5;
-        //for(int i = 0 ; i< rotAxis.size();i++)
-        //{
-
-
+        for (int i = 0 ; i< bodies.size();i++)
+        {
+            MVMatrix = bodies[i].viewMatrix(  &windowManager,freeCamera.getViewMatrix() );
+            NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
+            engine.renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+        }
 
 
         double t = windowManager.getTime();
 
-    double dt = t- PreviousT;
-/*
-        glm::vec3 earthForce = gforce(glm::vec3(0,0,0),moonPosition);
-        glm::vec3 moonForce = gforce(moonPosition,glm::vec3(0,0,0));
+        double dt = (t- PreviousT)*100000;
 
-        earthQmvt += earthForce*(float)dt;
-         moonQmvt += moonForce*(float)dt;
 
-        moonPosition += moonQmvt/(float)(1000)*(float)dt;
-
-        PreviousT = t;
-
-            MVMatrix = camera.getViewMatrix();
-            //MVMatrix = glm::rotate(MVMatrix, acc*windowManager.getTime()*windowManager.getTime(), rotAxis[0]); //T*Rlarge
-            MVMatrix = glm::translate(MVMatrix,moonPosition); // T*Rlarge*Tpos
-            MVMatrix = glm::rotate(MVMatrix, windowManager.getTime(), -rotAxis[0]); // T*Rlarge*Tpos*RotationPropre
-            MVMatrix = glm::scale(MVMatrix, (float)(3475./12756.)*glm::vec3(1, 1, 1));
-            NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
+        for (int i = 1;i< bodies.size();i++)
+        {
+            bodies[i].update(dt,bodies,glm::vec3(0,0,0));
+        }
 
 
 
-            cout<<moonPosition<<endl;
-
-    cout<<"computed angle "<<angle<<endl;*/
 
 
 
-        openglRender(&engine,MVMatrix,ProjMatrix,NormalMatrix,asphere,vao);
+        PreviousT= t;
 
-        //}
 
-        windowManager.swapBuffers();
+
+
+
+
+
+        windowManager.swapBuffers() ;
     }
 
-    glDeleteBuffers(1,vbo);
-    glDeleteVertexArrays(1,vao);
+
     return EXIT_SUCCESS;
 }
