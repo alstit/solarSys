@@ -1,3 +1,5 @@
+
+
 #include <glimac/SDLWindowManager.hpp>
 #include <glimac/Image.hpp> 
 #include <GL/glew.h>
@@ -15,6 +17,8 @@
 #include <limits>
 #include <SDL/SDL.h>
 #include <stdlib.h> 
+#include <solarSys/const.hpp>
+
 
 using namespace glimac;
 using namespace std;
@@ -67,18 +71,24 @@ int main(int argv,char** argc) {
 
 
 
-    float graphicScale = 30;
+
     srand (time(NULL));
     
     std::vector<Body>  bodies;
+    
+
 
     bodies.push_back( Body(1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0)));
     float theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(4879.e3*graphicScale/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)49.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(4879.e3*GRAPHIC_SCALE/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)49.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta =theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(12104.e3*graphicScale/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(12104.e3*GRAPHIC_SCALE/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(12756.e3*graphicScale/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(12756.e3*GRAPHIC_SCALE/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    bodies.push_back( Body(6792.e3*GRAPHIC_SCALE/2.,0.642e24,(float)227.9e9*vec3(cos(theta),sin(theta),0),(float)24.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    bodies.push_back( Body(142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     freeCamera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
 
 
@@ -141,32 +151,39 @@ int main(int argv,char** argc) {
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
 
+        double t = windowManager.getTime();
 
+        double dt = (t- PreviousT)*SIMSPEED;
 
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (int i = 0 ; i< bodies.size();i++)
         {
-            MVMatrix = bodies[i].viewMatrix(  &windowManager,freeCamera.getViewMatrix() );
+            MVMatrix = bodies[i].viewMatrixBody(  &windowManager,freeCamera.getViewMatrix() );
             NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
             engine.renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+            
+            std::vector<glm::mat4> matrix = bodies[i].viewMatrixTrail(  &windowManager,freeCamera.getViewMatrix() );
+            for(int j = 0 ; j<matrix.size();j+=TRAIL_RENDER_FACTOR)
+            {
+                NormalMatrix = glm::transpose(glm::inverse(matrix[j]));
+                engine.renderTrail(matrix[j],ProjMatrix,NormalMatrix,t - bodies[i].previousPos[j].time);
+            }
         }
 
 
-        double t = windowManager.getTime();
 
-        double dt = (t- PreviousT)*100000;
 
 
         for (int i = 1;i< bodies.size();i++)
         {
-            bodies[i].update(dt,bodies,glm::vec3(0,0,0));
+            bodies[i].update(t,dt,bodies,glm::vec3(0,0,0));
         }
 
 
 
-
+        //cout<<bodies[0].position<<endl;
 
 
         PreviousT= t;
