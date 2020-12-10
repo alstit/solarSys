@@ -1,7 +1,11 @@
+#pragma once
+#include <glimac/ICamera.hpp>
+
+
 
 using namespace glm;
 
-class FreeflyCamera
+class FreeflyCamera: public ICamera
 {
     public:
     glm::vec3 m_Position;
@@ -9,19 +13,22 @@ class FreeflyCamera
     float m_fTheta;
     glm::vec3 m_FrontVector ;
 
-    glm::vec3 m_LeftVector,m_UpVector; 
 
-        void computeDirectionVectors();
-        FreeflyCamera(); 
-        void moveLeft(float t);
-        void moveFront(float t) ;
-        void rotateLeft(float degrees) ;
-        void rotateUp(float degrees);
-        glm::mat4 getViewMatrix() const;
+    std::string getType(){return "FreeflyCamera";};///to know type of camera, usefull for switching camera types
+    glm::mat4  getViewMatrix(glm::vec3 lookat,float distance,float fov) {return glm::mat4();};//////// this function is here to fit the interfce ICamera
+    glm::vec3 m_LeftVector,m_UpVector; 
+    void computeDirectionVectors();
+    FreeflyCamera(); 
+    void moveLeft(float t);
+    void moveFront(float t) ;
+    void rotateLeft(float degrees) ;
+    void rotateUp(float degrees);
+    glm::mat4 getViewMatrix() override;
 };
 
 
-glm::mat4 FreeflyCamera::getViewMatrix() const
+
+glm::mat4 FreeflyCamera::getViewMatrix() 
 {
     return glm::lookAt(this->m_Position,this->m_Position+this->m_FrontVector,this->m_UpVector);
 };
@@ -48,6 +55,7 @@ void FreeflyCamera::moveLeft(float t)
 
 void FreeflyCamera::moveFront(float t)
 {
+   
     this->m_Position+=t*this->m_FrontVector;
 };
 
