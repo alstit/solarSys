@@ -21,6 +21,7 @@
 #include <memory>
 
 
+
 using namespace glimac;
 using namespace std;
 
@@ -35,7 +36,7 @@ inline bool instanceof(const T*) {
 
 int main(int argv,char** argc) {
     // Initialize SDL and open a window
-    SDLWindowManager windowManager(1280, 1024, "GLImac");
+    SDLWindowManager windowManager(800, 600, "GLImac");
 
     // Initialize glew for OpenGL3+ support
     GLenum glewInitError = glewInit();
@@ -151,7 +152,7 @@ int main(int argv,char** argc) {
             if(windowManager.isKeyPressed(SDLK_LCTRL))
             {
                 glm::ivec2 mousePos = windowManager.getMousePosition();
-                camera.moveFront((-mousePos[1]+prevMousePos[1])*0.0000930951);
+                camera.moveFront((-mousePos[1]+prevMousePos[1])*0.000930951);
                 
             }
 
@@ -173,7 +174,8 @@ int main(int argv,char** argc) {
         {
             if(camera.getType()=="TrackballCamera")
             {
-                MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix(bodies[0].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix(bodies[5].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                //MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix());
               //  std::cout<<"hello"<<std::endl;
             }
             else{MVMatrix = bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix() );
@@ -184,7 +186,8 @@ int main(int argv,char** argc) {
             
             if(camera.getType()=="TrackballCamera")
             {
-                matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix(bodies[0].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix(bodies[5].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                //matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix());
             }
             else {matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix() );}
             for(int j = 0 ; j<matrix.size();j+=TRAIL_RENDER_FACTOR)
@@ -194,7 +197,7 @@ int main(int argv,char** argc) {
             }
         }
 
-
+ 
 
 
 
