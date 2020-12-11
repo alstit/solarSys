@@ -9,6 +9,8 @@
 using namespace glimac;
 
 
+
+
 class Object3D 
 {
     public:
@@ -151,7 +153,7 @@ class Engine
         this->trailShaders.program.use();
         this->trailShaders.getUniforms();
 
-        vec3 vertices[] = {vec3(0,-5.f,0),vec3(0,5.f,0)};
+        vec3 vertices[] = {vec3(0,0,0),vec3(0,-1.f,0)};
 
         glGenBuffers(1,this->trailShaders.vbo);
         glBindBuffer(GL_ARRAY_BUFFER,*(this->trailShaders.vbo));

@@ -5,6 +5,7 @@
 #include <vector>
 #include <glm/gtx/vector_angle.hpp>
 #include <solarSys/const.hpp>
+#include <math.h>
 
 
 
@@ -39,13 +40,16 @@ class Body
             std::vector<glm::mat4> matrix;
             glm::mat4 amatrix;
             float theta;
-            glm::vec3 ascale = glm::vec3(1,(float)TRAIL_RENDER_FACTOR,1)*this->scale/UNITEASTRONOMIQUE;
+            glm::vec3 ascale = glm::vec3(1,(float)TRAIL_RENDER_FACTOR,1)*(float)std::pow(this->scale/UNITEASTRONOMIQUE,1);
+          
             for (int i=0;i<this->previousPos.size();i++)
             {
+                 theta =  glm::orientedAngle(glm::vec3(0,1,0),glm::normalize(this->previousPos[i].speed),glm::vec3(0,0,1));//////// update direction vector according to randomness
+
+                //amatrix= translate(MVMatrix,10.f*this->scale/UNITEASTRONOMIQUE*glm::vec3(0,(float)TRAIL_RENDER_FACTOR*sin(theta),0));
                 amatrix= translate(MVMatrix,this->previousPos[i].Pos/UNITEASTRONOMIQUE);
-                theta =  glm::orientedAngle(glm::vec3(0,1,0),glm::normalize(this->previousPos[i].speed),glm::vec3(0,0,1));//////// update direction vector according to randomness
-                //amatrix= translate(MVMatrix,0.5f*glm::vec3(cos(theta),sin(theta)*(float)TRAIL_RENDER_FACTOR,1)*this->scale/UNITEASTRONOMIQUE);
                 amatrix = rotate(amatrix, theta, glm::vec3(0,0,1));
+                //amatrix = glm::scale(amatrix,(float)TRAIL_RENDER_FACTOR/100*glm::vec3(0,1,0));
                 amatrix = glm::scale(amatrix,ascale);
                 matrix.push_back(amatrix);
             }
