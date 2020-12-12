@@ -3,6 +3,7 @@
 #include <glimac/ICamera.hpp>
 #include <string>
 #include <solarSys/const.hpp>  
+#include <iostream>
 
 class TrackballCamera : public ICamera
 {
@@ -34,13 +35,15 @@ void TrackballCamera::moveFront(float delta)
 
 void  TrackballCamera::rotateLeft(float degrees)
 {
-    this->m_fAngleX+=degrees/100;
+    this->m_fAngleX+=degrees;
+        std::cout<<m_fAngleY<<std::endl;
 };
 
 
 void TrackballCamera::rotateUp(float degrees)
 {
-    this->m_fAngleY+=degrees/100;
+    this->m_fAngleY+=degrees;
+    std::cout<<"angl"<<m_fAngleY<<std::endl;
 };
 
 glm::mat4  TrackballCamera::getViewMatrix() 
@@ -57,8 +60,8 @@ glm::mat4  TrackballCamera::getViewMatrix(glm::vec3 lookat,float distance,float 
 {
     glm::mat4 matrix = glm::translate(glm::mat4(),-lookat/UNITEASTRONOMIQUE);
     matrix = glm::translate(matrix,glm::vec3(0,0,this->m_fDistance));
-    matrix =  glm::rotate(matrix,glm::radians(this->m_fAngleX ), glm::vec3(1,0,0));
-    matrix = glm::rotate(matrix, glm::radians(this->m_fAngleY), glm::vec3(0,1,0));
+    matrix =  glm::rotate(matrix,this->m_fAngleX, glm::vec3(1,0,0));
+    matrix = glm::rotate(matrix, this->m_fAngleY, glm::vec3(0,1,0));
     //return glm::translate(glm::mat4(),glm::vec3(0,0,3));
     return matrix;
 };

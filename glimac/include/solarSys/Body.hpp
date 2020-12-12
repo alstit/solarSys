@@ -18,6 +18,10 @@ struct PreviousPos{
 };
 
 
+
+
+
+
 class Body
 {    public:
         float scale;
@@ -25,9 +29,18 @@ class Body
         vec3 position;
         vec3 initSpeed;
         std::vector<PreviousPos> previousPos;
+        Engine* myEngine;
+        MyShader* myShader;
 
-        Body( float scale,float masse,vec3 position,vec3 initSpeed)
+        Body(Engine* engine ,MyShader *engineShader,std::string vertexShader,std::string fragShader, float scale,float masse,vec3 position,vec3 initSpeed)
         {
+            this->myEngine = engine;
+            this->myShader = engineShader;
+            //engine->planetShaders=aShader;
+            //engine->trailShaders=aShader;
+            engine->loadPlanetShader(engineShader,vertexShader,fragShader);
+            engine->openglBindBuffShpere();
+            //engine->openglBindBuffTrail();
             this->scale = scale;
             this->masse = masse;
             this->position = position;
@@ -56,8 +69,9 @@ class Body
             return matrix;
         };
 
-        glm::mat4 viewMatrixBody( SDLWindowManager* windowManager,glm::mat4 MVMatrix)
+        glm::mat4 viewMatrixBody(SDLWindowManager* windowManager,glm::mat4 MVMatrix)
         {
+            this->myEngine->planetShaders = myShader;
             MVMatrix = translate(MVMatrix,this->position/UNITEASTRONOMIQUE);
             MVMatrix = rotate(MVMatrix, windowManager->getTime(), glm::vec3(0,1,0));
             MVMatrix = glm::scale(MVMatrix, this->scale/UNITEASTRONOMIQUE*glm::vec3(1, 1, 1));
@@ -71,6 +85,7 @@ class Body
 
 
 };
+
 
 glm::vec3 gforce(Body p1,Body p2){
     // Calculate the gravitational force exerted on p1 by p2.

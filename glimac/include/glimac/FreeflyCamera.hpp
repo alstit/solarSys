@@ -30,6 +30,7 @@ class FreeflyCamera: public ICamera
 
 glm::mat4 FreeflyCamera::getViewMatrix() 
 {
+    this->computeDirectionVectors();
     return glm::lookAt(this->m_Position,this->m_Position+this->m_FrontVector,this->m_UpVector);
 };
 
@@ -62,6 +63,7 @@ void FreeflyCamera::moveFront(float t)
 void FreeflyCamera::rotateLeft(float degrees)
 {
     this->m_fPhi+=degrees;
+
 }
 
 void FreeflyCamera::rotateUp(float degrees)
