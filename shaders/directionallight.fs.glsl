@@ -36,6 +36,6 @@ void main()
     
 
 
-	//fFragColor = blinnPhong();
-    fFragColor = vec3(color,0);
+	fFragColor = blinnPhong();
+    //fFragColor = vec3(color,0);
 }

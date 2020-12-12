@@ -17,8 +17,10 @@
 #include <SDL/SDL.h>
 #include <stdlib.h> 
 #include <solarSys/const.hpp>
+#include <solarSys/MyShader.hpp>
 #include <typeinfo>
 #include <memory>
+#include <string>
 
 
 
@@ -32,6 +34,8 @@ template<typename Base, typename T>
 inline bool instanceof(const T*) {
    return is_base_of<Base, T>::value;
 };
+
+    
 
 
 int main(int argv,char** argc) {
@@ -54,7 +58,21 @@ int main(int argv,char** argc) {
 
     Engine engine(applicationPath);
 
+    /////////////////////
+    //Load Shaders Here//
+    /////////////////////
+
+    std::shared_ptr<PlanetShader> aplanetShader = std::shared_ptr<PlanetShader>(new PlanetShader);
+    std::shared_ptr<SunShader> asunShader = std::shared_ptr<SunShader>(new SunShader);
+    std::shared_ptr<TrailShader> atrailShader = std::shared_ptr<TrailShader>(new TrailShader);
+
+    MyShader sunShader(asunShader);
+    MyShader planetShader(aplanetShader);
+    MyShader trailShader(atrailShader);
+
+    engine.loadTrailShader(&trailShader,"trail","trail");
     
+
 
     Camera camera(std::unique_ptr<FreeflyCamera>(new FreeflyCamera()));
     //camera = Camera(std::unique_ptr<TrackballCamera>(new TrackballCamera()));
@@ -66,23 +84,28 @@ int main(int argv,char** argc) {
     ProjMatrix = glm::perspective(glm::radians(fov),4.f/3.f,(float)0.00000930951,(float)20);
 
     srand (time(NULL));
-    
+
     std::vector<Body>  bodies;
 
-    bodies.push_back( Body(1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0)));
+
+    bodies.push_back( Body(&engine,&sunShader,"3D","directionallight",1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0)));
     float theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(4879.e3*GRAPHIC_SCALE/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)49.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back(  Body(&engine,&planetShader,"3D","planetNormal",4879.e3*GRAPHIC_SCALE/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)49.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta =theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(12104.e3*GRAPHIC_SCALE/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12104.e3*GRAPHIC_SCALE/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(12756.e3*GRAPHIC_SCALE/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12756.e3*GRAPHIC_SCALE/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(6792.e3*GRAPHIC_SCALE/2.,0.642e24,(float)227.9e9*vec3(cos(theta),sin(theta),0),(float)24.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",6792.e3*GRAPHIC_SCALE/2.,0.642e24,(float)227.9e9*vec3(cos(theta),sin(theta),0),(float)24.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    
     camera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
 
 
+    glm::vec3 test = glm::vec3(1,1,1);
+    asunShader->setUniforms(test,test,test,test,1.f);
+    aplanetShader->setUniforms(test,test,glm::vec4(1,0,0,1),glm::vec3(1,1,1),1.f);
 
 
     // Application loop:
@@ -90,6 +113,7 @@ int main(int argv,char** argc) {
     double PreviousT =0;
     std::vector<glm::mat4> matrix ;
     bool done = false;
+    int bodyCam = 0;
     while(!done) 
     {
         // Event loop:
@@ -128,7 +152,8 @@ int main(int argv,char** argc) {
 
                 }
                 else if(camera.getType()=="TrackballCamera")
-                {
+                {   
+                    bodyCam+=1%bodies.size();
                     camera = Camera(std::unique_ptr<FreeflyCamera>(new FreeflyCamera()));
                     camera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
                 }
@@ -146,8 +171,8 @@ int main(int argv,char** argc) {
             {
                 
                 glm::ivec2 mousePos = windowManager.getMousePosition();
-                //camera.rotateLeft(mousePos[1]*.0001);
-                //camera.rotateUp(mousePos[0]*.001);
+                camera.rotateLeft(-(-mousePos[1]+prevMousePos[1])*.0001);
+                camera.rotateUp(-(-mousePos[0]+prevMousePos[0])*.0001);
             }
             if(windowManager.isKeyPressed(SDLK_LCTRL))
             {
@@ -155,6 +180,7 @@ int main(int argv,char** argc) {
                 camera.moveFront((-mousePos[1]+prevMousePos[1])*0.000930951);
                 
             }
+            
 
         }
         prevMousePos = windowManager.getMousePosition();
@@ -170,34 +196,42 @@ int main(int argv,char** argc) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
         for (int i = 0 ; i< bodies.size();i++)
         {
             if(camera.getType()=="TrackballCamera")
             {
-                MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix(bodies[5].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
                 //MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix());
               //  std::cout<<"hello"<<std::endl;
             }
             else{MVMatrix = bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix() );
             //std::cout<<"hello2"<<std::endl;
             }
+            aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
             NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
+
             engine.renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+
+            
             
             if(camera.getType()=="TrackballCamera")
             {
-                matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix(bodies[5].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
                 //matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix());
             }
             else {matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix() );}
             for(int j = 0 ; j<matrix.size();j+=TRAIL_RENDER_FACTOR)
             {
                 NormalMatrix = glm::transpose(glm::inverse(matrix[j]));
+
+                //engine.trailShaders->use();
+                atrailShader->setTime(t - bodies[i].previousPos[j].time);
                 engine.renderTrail(matrix[j],ProjMatrix,NormalMatrix,t - bodies[i].previousPos[j].time);
             }
         }
 
- 
+
 
 
 
