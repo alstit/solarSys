@@ -125,7 +125,7 @@ glDisable(GL_CULL_FACE);
 glEnable(GL_BLEND); 
 glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 //glBlendFunc(GL_CONSTANT_COLOR,GL_ONE_MINUS_SRC_ALPHA);
-    Flare aflare;
+    Flare aflare(3);
     engine.openglBindBuffDisk();
 
 
@@ -247,18 +247,16 @@ glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         glm::vec4 tempsSunCal = glm::vec4(bodies[0].position[0],bodies[0].position[1],bodies[0].position[2],1)/UNITEASTRONOMIQUE;
-        glm::vec4 sunPositionToCamera = bodies[0].viewMatrixBody(  &windowManager,camera.getViewMatrix() ) * tempsSunCal;
+        glm::vec4 sunPositionToCamera = ProjMatrix*bodies[0].viewMatrixBody(  &windowManager,camera.getViewMatrix() ) * tempsSunCal;
 
         cout<<sunPositionToCamera*UNITEASTRONOMIQUE<<endl;
         //MVMatrix = aflare.viewMatrix(camera.getViewMatrix() );
 
-        MVMatrix=aflare.viewMatrix(sunPositionToCamera*UNITEASTRONOMIQUE);
-        cout<<"flare "<<MVMatrix*glm::vec4(1,1,0,1)<<endl;
-        engine.renderDisk(MVMatrix,ProjMatrix,glm::mat4());
-
-
-
-
+        std::vector<glm::mat4> lensMatrix=aflare.viewMatrix(sunPositionToCamera*UNITEASTRONOMIQUE);
+       // cout<<"flare "<<MVMatrix*glm::vec4(1,1,0,1)<<endl;
+       for(int i = 0;i<lensMatrix.size();i++){
+        engine.renderDisk(lensMatrix[i],ProjMatrix,glm::mat4());
+       } 
 
         for (int i = 1;i< bodies.size();i++)
         {
