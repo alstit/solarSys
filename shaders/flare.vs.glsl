@@ -8,9 +8,10 @@ uniform mat4 uMVPMatrix;
 uniform mat4 uMVMatrix;
 uniform mat4 uNormalMatrix;
 
-
+out vec3 localPosition;
 
 void main()
 {
+	localPosition=position;
     gl_Position=uMVMatrix*vec4(position,1.0);
 }
