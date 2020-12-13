@@ -25,7 +25,7 @@ class Flare
         {
             for(int i =0;i<nbrofLens;i++)
             {
-                lens.push_back(Lens((i+1)/10.0f,3*nbrofLens/(float)(nbrofLens+1-i)*nbrofLens/(float)(nbrofLens+1-i)*nbrofLens/(float)(nbrofLens+1-i)));
+                lens.push_back(Lens((i+1)/20.0f,1+2*nbrofLens/(float)(nbrofLens+1-i)*nbrofLens/(float)(nbrofLens+1-i)*nbrofLens/(float)(nbrofLens+1-i)));
             }
         }
 
