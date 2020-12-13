@@ -4,7 +4,7 @@ precision mediump float;
 
 uniform float uTime;
 
-out vec3 fFragColor;
+out vec4 fFragColor;
 
 
 float disappear()
@@ -15,5 +15,5 @@ float disappear()
 }
 void main()
 {
-    fFragColor=disappear()*vec3(1,1,1);
+    fFragColor=disappear()*vec4(1,1,1,1);
 }

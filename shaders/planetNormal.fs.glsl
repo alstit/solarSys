@@ -7,7 +7,7 @@ in vec4 viewPosition;
 in vec4 viewNormale;
 in vec2 color;
 
-out vec3 fFragColor;
+out vec4 fFragColor;
 
 uniform vec3 uKd;
 uniform vec3 uKs;
@@ -42,5 +42,6 @@ void main()
     
 
     //fFragColor = vec3(color,1);
-	fFragColor = blinnPhong();
+	//fFragColor = blinnPhong();
+	fFragColor = vec4(vec3(gl_FragCoord.z), 1.0);
 }

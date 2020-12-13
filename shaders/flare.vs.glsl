@@ -12,5 +12,5 @@ uniform mat4 uNormalMatrix;
 
 void main()
 {
-    gl_Position=uMVPMatrix*vec4(position,1);
+    gl_Position=uMVMatrix*vec4(position,1.0);
 }
