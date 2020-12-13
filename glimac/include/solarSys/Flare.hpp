@@ -21,12 +21,16 @@ class Flare
 
     
     public:
-        Flare(int nbrofLens)
+
+
+        Flare(int nbrofLens,Engine* engine, MyShader* ashader, std::string vertexShader,std::string fragShader)
         {
             for(int i =0;i<nbrofLens;i++)
             {
                 lens.push_back(Lens((i+1)/20.0f,1+2*nbrofLens/(float)(nbrofLens+1-i)*nbrofLens/(float)(nbrofLens+1-i)*nbrofLens/(float)(nbrofLens+1-i)));
             }
+            engine->loadFlareShader(ashader,vertexShader,fragShader);
+            engine->openglBindBuffDisk();
         }
 
         std::vector<glm::mat4> viewMatrix(glm::vec4 lightPos_toCam) //light pos to camera is position of light source in camera repere i.e. lightPos_toCam = MVMatrix*lightPos
@@ -44,5 +48,11 @@ class Flare
             }
             return matrix;
         }
+
+        void render(Engine* engine,MyShader* aflareShader,glm::mat4 MVMatrix,glm::mat4 ProjMatrix)
+        {   engine->flareShaders = aflareShader;
+            engine->renderDisk(MVMatrix,ProjMatrix,glm::mat4());
+        };
+
 
 };

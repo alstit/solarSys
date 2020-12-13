@@ -79,6 +79,12 @@ class Body
         }
         
 
+        void render(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+        {
+            this->myEngine->planetShaders = myShader;
+            this->myEngine->renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+        }   
+
 
         void update(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce);
 

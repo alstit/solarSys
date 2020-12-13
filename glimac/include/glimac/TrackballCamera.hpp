@@ -7,9 +7,10 @@
 
 class TrackballCamera : public ICamera
 {
-    float m_fDistance, m_fAngleX ,m_fAngleY;
+
 
     public:
+        float m_fDistance, m_fAngleX ,m_fAngleY;
         std::string getType(){return "TrackballCamera";}
 
         TrackballCamera();
@@ -19,6 +20,8 @@ class TrackballCamera : public ICamera
         void rotateUp(float degrees);
         glm::mat4 getViewMatrix() ;
         glm::mat4  getViewMatrix(glm::vec3 lookat,float distance,float fov) ;
+        float getAngleX(){return glm::radians(m_fAngleX);};
+        float getAngleY(){return m_fAngleY;};
 };
 
 TrackballCamera::TrackballCamera()
@@ -36,7 +39,7 @@ void TrackballCamera::moveFront(float delta)
 void  TrackballCamera::rotateLeft(float degrees)
 {
     this->m_fAngleX+=degrees;
-        std::cout<<m_fAngleY<<std::endl;
+       
 };
 
 
@@ -55,6 +58,9 @@ glm::mat4  TrackballCamera::getViewMatrix()
     //return glm::translate(glm::mat4(),glm::vec3(0,0,3));
     return matrix;
 };
+
+
+
 
 glm::mat4  TrackballCamera::getViewMatrix(glm::vec3 lookat,float distance,float fov) 
 {

@@ -18,6 +18,16 @@ public:
         : aCamera(std::move(new_camera))
     {}
 
+    float getAngleX()
+    {
+        return aCamera->AngleX();
+    }
+
+    float getAngleY()
+    {
+        return aCamera->AngleY();
+    }
+
     std::string getType()
     {
         return aCamera->aGetType();

@@ -25,7 +25,7 @@ class Engine
     Disk adisk = Disk(1,30);
     MyShader *planetShaders;
     MyShader* trailShaders;
-    MyShader* flareShaders;
+    MyShader* flareShaders; ///// flare shader is actually the diskShader this is an error, flareShader should be called diskShader
     FilePath applicationPath;
 
 

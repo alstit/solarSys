@@ -23,6 +23,8 @@ class FreeflyCamera: public ICamera
     void moveFront(float t) ;
     void rotateLeft(float degrees) ;
     void rotateUp(float degrees);
+    float getAngleX(){return glm::radians(m_fPhi);};
+    float getAngleY(){return glm::radians(m_fTheta);};
     glm::mat4 getViewMatrix() override;
 };
 

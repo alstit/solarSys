@@ -13,6 +13,9 @@ class ICamera
         void getRotateUp(float delta){rotateUp(delta);}
         void getRotateLeft(float delta){rotateLeft(delta);}
         std::string aGetType(){return getType();}
+        float AngleX(){return getAngleX();};
+        float AngleY(){return getAngleY();};
+
 
         virtual ~ICamera() = default;
     private :
@@ -23,4 +26,6 @@ class ICamera
         virtual void rotateLeft(float delta) = 0;
         virtual void rotateUp(float delta) = 0;
         virtual std::string getType() = 0;
+        virtual float getAngleX()=0;
+        virtual float getAngleY()=0;
 };
