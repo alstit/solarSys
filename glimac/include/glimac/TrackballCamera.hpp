@@ -43,7 +43,7 @@ void  TrackballCamera::rotateLeft(float degrees)
 void TrackballCamera::rotateUp(float degrees)
 {
     this->m_fAngleY+=degrees;
-    std::cout<<"angl"<<m_fAngleY<<std::endl;
+
 };
 
 glm::mat4  TrackballCamera::getViewMatrix() 

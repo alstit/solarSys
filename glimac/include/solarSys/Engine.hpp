@@ -6,8 +6,8 @@
 #include <glimac/SDLWindowManager.hpp>
 #include <solarSys/const.hpp>    
  #include <solarSys/MyShader.hpp>
+ #include <solarSys/Disk.hpp>
 using namespace glimac;
-
 
 
 
@@ -22,10 +22,11 @@ class Engine
 {
     public:
     Sphere asphere = Sphere(10, 64, 64);// defini par le rayon 
+    Disk adisk = Disk(1,30);
     MyShader *planetShaders;
     MyShader* trailShaders;
+    MyShader* flareShaders;
     FilePath applicationPath;
-
 
 
 
@@ -59,10 +60,54 @@ class Engine
         this->planetShaders->load(applicationPath,fragmentPath,vertexPath);
     }    
 
+    void loadFlareShader(MyShader *aFlareShader,std::string vertexPath,std::string fragmentPath)
+    {
+        this->flareShaders = aFlareShader;
+        this->flareShaders->load(applicationPath,fragmentPath,vertexPath);
+    }   
+
+
+    void openglBindBuffDisk()
+    {
+        this->flareShaders->use();
+        this->flareShaders->getUniforms();
+
+        glGenBuffers(1,this->flareShaders->vbo());
+        glBindBuffer(GL_ARRAY_BUFFER,*(this->flareShaders->vbo()));
+        glBufferData(GL_ARRAY_BUFFER,this->adisk.getVertexCount()*sizeof(Disk),this->adisk.getDataPointer(),GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER,0);
+
+
+        glGenVertexArrays(1,this->flareShaders->vao());
+        glBindVertexArray(*(this->flareShaders->vao()));
+        glBindBuffer(GL_ARRAY_BUFFER,*(this->flareShaders->vbo()));
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,position));
+        glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,color));
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER,0);
+
+    }
+
+    void renderDisk(glm::mat4 MVMatrix, glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+    {
+        this->flareShaders->use();
+        flareShaders->renderMVP(MVMatrix,ProjMatrix,NormalMatrix);   
+        glBindVertexArray(*(this->flareShaders->vao()));
+	    //glDrawArray(primitives, firstVertex,nbrOfVertex)
+	    glDrawArrays(GL_TRIANGLES,0,this->adisk.getVertexCount());
+	    glBindVertexArray(0);
+
+    }
+
+
+
     void openglBindBuffShpere()
     {
-
-
         this->planetShaders->use();
 
         planetShaders->getUniforms();
