@@ -23,6 +23,7 @@
 #include <string>
 #include <solarSys/Flare.hpp>
 #include <solarSys/Disk.hpp>
+#include <solarSys/Bloom.hpp>
 
 
 using namespace glimac;
@@ -67,16 +68,25 @@ int main(int argv,char** argc) {
     std::shared_ptr<SunShader> asunShader = std::shared_ptr<SunShader>(new SunShader);
     std::shared_ptr<TrailShader> atrailShader = std::shared_ptr<TrailShader>(new TrailShader);
     std::shared_ptr<GenericShader> aflareShader = std::shared_ptr<GenericShader>(new GenericShader);
+    std::shared_ptr<GenericShader> abloomShader = std::shared_ptr<GenericShader>(new GenericShader);
 
     MyShader flareShader(aflareShader);
     MyShader sunShader(asunShader);
     MyShader planetShader(aplanetShader);
     MyShader trailShader(atrailShader);
+    MyShader bloomShader(abloomShader);
 
-    engine.loadFlareShader(&flareShader,"flare","flare");
     engine.loadTrailShader(&trailShader,"trail","trail");
-    
 
+    /////for lens flare effect
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND); 
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    ///light effects (flare and bloom)
+    Flare aflare(3,&engine,&flareShader,"flare","flare");
+    engine.openglBindBuffDisk();
+    Bloom abloom(&engine,&bloomShader,"generic","generic");
 
     Camera camera(std::unique_ptr<FreeflyCamera>(new FreeflyCamera()));
     //camera = Camera(std::unique_ptr<TrackballCamera>(new TrackballCamera()));
@@ -120,13 +130,7 @@ int main(int argv,char** argc) {
     bool done = false;
     int bodyCam = 0;
 
-/////for lens flare effect
-glDisable(GL_CULL_FACE);
-glEnable(GL_BLEND); 
-glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-//glBlendFunc(GL_CONSTANT_COLOR,GL_ONE_MINUS_SRC_ALPHA);
-    Flare aflare(3);
-    engine.openglBindBuffDisk();
+
 
 
 
@@ -218,55 +222,55 @@ glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             if(camera.getType()=="TrackballCamera")
             {
                 MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
-                //MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix());
-              //  std::cout<<"hello"<<std::endl;
             }
             else{MVMatrix = bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix() );
-            //std::cout<<"hello2"<<std::endl;
             }
             aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
             NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
-
-            engine.renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
-        
+            bodies[i].render(MVMatrix,ProjMatrix,NormalMatrix);
     
             if(camera.getType()=="TrackballCamera")
             {
                 matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
-                //matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix());
             }
             else {matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix() );}
+
             for(int j = 0 ; j<matrix.size();j+=TRAIL_RENDER_FACTOR)
             {
                 NormalMatrix = glm::transpose(glm::inverse(matrix[j]));
-
-                //engine.trailShaders->use();
                 atrailShader->setTime(t - bodies[i].previousPos[j].time);
                 engine.renderTrail(matrix[j],ProjMatrix,NormalMatrix,t - bodies[i].previousPos[j].time);
             }
         }
 
+
+        
+        /////bloom effect
+        if(camera.getType()=="TrackballCamera"){MVMatrix = abloom.viewMatrix(camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov),&camera,bodies[0]);}
+        else{MVMatrix = abloom.viewMatrix(camera.getViewMatrix(),&camera,bodies[0]);}
+        abloom.render(&engine, &bloomShader,MVMatrix ,ProjMatrix, glm::mat4());
+        
+        ////flare effect
         glm::vec4 tempsSunCal = glm::vec4(bodies[0].position[0],bodies[0].position[1],bodies[0].position[2],1)/UNITEASTRONOMIQUE;
         glm::vec4 sunPositionToCamera = ProjMatrix*bodies[0].viewMatrixBody(  &windowManager,camera.getViewMatrix() ) * tempsSunCal;
-
-        cout<<sunPositionToCamera*UNITEASTRONOMIQUE<<endl;
-        //MVMatrix = aflare.viewMatrix(camera.getViewMatrix() );
-
         std::vector<glm::mat4> lensMatrix=aflare.viewMatrix(sunPositionToCamera*UNITEASTRONOMIQUE);
-       // cout<<"flare "<<MVMatrix*glm::vec4(1,1,0,1)<<endl;
-       for(int i = 0;i<lensMatrix.size();i++){
-        engine.renderDisk(lensMatrix[i],ProjMatrix,glm::mat4());
-       } 
+
+        for(int i = 0;i<lensMatrix.size();i++)
+        {
+            aflare.render(&engine,&flareShader,lensMatrix[i],ProjMatrix);
+        } 
+
+
+
+
+
+
+
 
         for (int i = 1;i< bodies.size();i++)
         {
             bodies[i].update(t,dt,bodies,glm::vec3(0,0,0));
         }
-
-
-        //cout<<bodies[0].position<<endl;
-
-
         PreviousT= t;
 
 
