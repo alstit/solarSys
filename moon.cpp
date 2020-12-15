@@ -114,7 +114,11 @@ int main(int argv,char** argc) {
     bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",6792.e3*GRAPHIC_SCALE/2.,0.642e24,(float)227.9e9*vec3(cos(theta),sin(theta),0),(float)24.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
     bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    Saturn aSaturn = ( Saturn(&engine,&planetShader,"3D","planetNormal",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     
+
+
     camera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
 
 
@@ -228,6 +232,7 @@ int main(int argv,char** argc) {
             aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
             NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
             bodies[i].render(MVMatrix,ProjMatrix,NormalMatrix);
+            
     
             if(camera.getType()=="TrackballCamera")
             {
@@ -249,7 +254,7 @@ int main(int argv,char** argc) {
         if(camera.getType()=="TrackballCamera"){MVMatrix = abloom.viewMatrix(camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov),&camera,bodies[0]);}
         else{MVMatrix = abloom.viewMatrix(camera.getViewMatrix(),&camera,bodies[0]);}
         abloom.render(&engine, &bloomShader,MVMatrix ,ProjMatrix, glm::mat4());
-        
+
         ////flare effect
         glm::vec4 tempsSunCal = glm::vec4(bodies[0].position[0],bodies[0].position[1],bodies[0].position[2],1)/UNITEASTRONOMIQUE;
         glm::vec4 sunPositionToCamera = ProjMatrix*bodies[0].viewMatrixBody(  &windowManager,camera.getViewMatrix() ) * tempsSunCal;
@@ -269,7 +274,12 @@ int main(int argv,char** argc) {
 
         for (int i = 1;i< bodies.size();i++)
         {
-            bodies[i].update(t,dt,bodies,glm::vec3(0,0,0));
+            bodies[i].updateForce(t,dt,bodies,glm::vec3(0,0,0));
+        }
+
+        for(int i =0;i<bodies.size();i++)
+        {
+            bodies[i].updatePosition(t,dt);
         }
         PreviousT= t;
 
