@@ -83,11 +83,48 @@ class Body
         }
         
 
-        void render(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+        glm::mat4 render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader)
         {
-            this->myEngine->planetShaders = myShader;
+             glm::mat4 MVMatrix;
+            
+            if(acamera->getType()=="TrackballCamera")
+            {
+                MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,1));
+            }
+            else {MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix() );}
+
+
+
+            //MVMatrix = this->viewMatrixBody(  &windowManager,acamera.getViewMatrix() )
+
+            glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
             this->myEngine->renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+            this->renderTrail(acamera,windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
+
+
+
+            return MVMatrix;////// for class who inherites from this one
         }   
+
+        void renderTrail(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader)
+        {
+            double t = windowManager->getTime();
+            std::vector<glm::mat4> matrix;
+            if(acamera->getType()=="TrackballCamera")
+            {
+                matrix = this->viewMatrixTrail(  windowManager,acamera->getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,1));
+                
+            }
+            else {matrix = this->viewMatrixTrail( windowManager,acamera->getViewMatrix() );}
+
+            for(int j = 0 ; j<matrix.size();j+=TRAIL_RENDER_FACTOR)
+            {
+                glm::mat4 NormalMatrix = glm::transpose(glm::inverse(matrix[j]));
+                atrailShader->setTime(t - this->previousPos[j].time);
+                myEngine->renderTrail(matrix[j],ProjMatrix,NormalMatrix,t - this->previousPos[j].time);
+            }
+        }
+
 
 
         void updateForce(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce);
@@ -121,16 +158,16 @@ glm::vec3 gforce(Body p1,Body p2){
 
 void Body::updateForce(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce)
 {
-    glm::vec3 Force = aforce;
+    
 
     for(int i = 0; i<bodies.size();i++)
     {
         if(bodies[i].position==this->position){continue;}
-        Force += gforce(*this,bodies[i]);
+        aforce += gforce(*this,bodies[i]);
     }
 
-    this->initSpeed+=Force/this->masse*(float)dt;
-    std::cout<<this->initSpeed<<std::endl;
+    this->initSpeed+=aforce/this->masse*(float)dt;
+
 }
 
 
@@ -148,18 +185,37 @@ void Body::updatePosition(float t,float dt)
 
 
 
-class Sature: public Body
+class Saturn: public Body
 {
+    MyShader* ringShaders;
     public : 
-        Saturn():Body(MyShader *engineShader,std::string vertexShader,std::string fragShader, float scale,float masse,vec3 position,vec3 initSpeed){};
-        void renderRing(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+        Saturn(Engine* engine ,MyShader *engineShader,MyShader* aringShader,std::string PlanetVertexShader,std::string PlanetFragShader,std::string RingVertexShader,std::string RingFragShader, float scale,float masse,vec3 position,vec3 initSpeed):Body(engine ,engineShader,PlanetVertexShader,PlanetFragShader,scale,masse,position,initSpeed)
         {
-            MVMatrix = translate(MVMatrix, this->position/UNITEASTRONOMIQUE);
-            MVMatrix = scale(MVMatrix,this->scale/UNITEASTRONOMIQUE);
-            engineShader->use();
+            this->myEngine->flareShaders = aringShader;
+            this->ringShaders = aringShader;
+            this->myEngine->loadFlareShader(ringShaders,RingVertexShader,RingFragShader);
+            this->myEngine->openglBindBuffDisk();
+            //this->myEngine->openglBindBuffDisk();
+        };
+        
+        
+        void renderRing(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix,SDLWindowManager* windowManager)
+        {
+            //MVMatrix = translate(MVMatrix, this->position/UNITEASTRONOMIQUE);
+            MVMatrix = rotate(MVMatrix,-windowManager->getTime(), glm::vec3(0,1,0));/// reverse Planete self rotation
+            MVMatrix = glm::scale(MVMatrix,30.0f*glm::vec3(1,1,1));
+            
+
             this->myEngine->renderDisk(MVMatrix,ProjMatrix,NormalMatrix);
 
         };
+        void render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader)
+        {
+            this->myEngine->flareShaders  = this->ringShaders;
+            glm::mat4 MVMatrix = this->Body::render(acamera, windowManager, ProjMatrix,bodies, bodyCam,atrailShader);
+            MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix() );
+            this->renderRing(MVMatrix,ProjMatrix,glm::mat4(),windowManager);
+        }
 
 
-}
+};

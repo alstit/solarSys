@@ -16,7 +16,7 @@ class Bloom
         {
             MVMatrix = translate(MVMatrix,sun.position/UNITEASTRONOMIQUE);
             //MVMatrix = rotate(MVMatrix,acamera., glm::vec3(0,1,0));
-            std::cout<<" cam angle"<<acamera->getAngleX() <<std::endl;
+            //std::cout<<" cam angle"<<acamera->getAngleX() <<std::endl;
             MVMatrix =  glm::rotate(MVMatrix,-acamera->getAngleX(), glm::vec3(1,0,0));
             MVMatrix = glm::rotate(MVMatrix, -acamera->getAngleY(), glm::vec3(0,1,0));
             MVMatrix = glm::scale(MVMatrix, 3.0f*glm::vec3(1, 1, 1));
