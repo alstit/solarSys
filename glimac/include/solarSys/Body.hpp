@@ -53,8 +53,8 @@ class Body
             std::vector<glm::mat4> matrix;
             glm::mat4 amatrix;
             float theta;
-            glm::vec3 ascale = glm::vec3(1,(float)TRAIL_RENDER_FACTOR,1)*(float)std::pow(this->scale/UNITEASTRONOMIQUE,1);
-          
+            //glm::vec3 ascale = glm::vec3(1,(float)TRAIL_RENDER_FACTOR,1)*(float)std::pow(this->scale/UNITEASTRONOMIQUE,1);
+          glm::vec3 ascale ;
             for (int i=0;i<this->previousPos.size();i++)
             {
                  theta =  glm::orientedAngle(glm::vec3(0,1,0),glm::normalize(this->previousPos[i].speed),glm::vec3(0,0,1));//////// update direction vector according to randomness
@@ -63,6 +63,10 @@ class Body
                 amatrix= translate(MVMatrix,this->previousPos[i].Pos/UNITEASTRONOMIQUE);
                 amatrix = rotate(amatrix, theta, glm::vec3(0,0,1));
                 //amatrix = glm::scale(amatrix,(float)TRAIL_RENDER_FACTOR/100*glm::vec3(0,1,0));
+                if(i<this->previousPos.size()-1){
+                    ascale =glm::vec3(1,(float)TRAIL_RENDER_FACTOR*(float)abs(length(this->previousPos[i+1].Pos-this->previousPos[i].Pos))/UNITEASTRONOMIQUE,1);
+                }
+                else{ascale =glm::vec3(1,(float)TRAIL_RENDER_FACTOR*(float)abs(length(this->position-this->previousPos[i].Pos))/UNITEASTRONOMIQUE,1);}
                 amatrix = glm::scale(amatrix,ascale);
                 matrix.push_back(amatrix);
             }
@@ -86,7 +90,8 @@ class Body
         }   
 
 
-        void update(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce);
+        void updateForce(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce);
+        void updatePosition(float t,float dt);
 
 
 
@@ -97,33 +102,64 @@ glm::vec3 gforce(Body p1,Body p2){
     // Calculate the gravitational force exerted on p1 by p2.
     double G = 6.67e-11 ; 
     // Calculate distance vector between p1 and p2.
-    float r_mag = glm::length(p1.position-p2.position);
+    //std::cout<<"vectros  "<<p1.position<<" "<<p2.position<<std::endl;
+    double r_mag = glm::length(p1.position-p2.position);
+    //std::cout << "r_hat" << r_mag<<std::endl;
     glm::vec3 r_hat = glm::normalize(p1.position-p2.position);
+    if(r_mag == 0){r_hat = vec3(0,0,0);}
+    //std::cout << "r_hat" << r_hat<<std::endl;
     // Calculate force magnitude.
-    float force_mag = G*p1.masse*p2.masse/(r_mag*r_mag) ;///1000 = masse
+    double force_mag = G*p1.masse*p2.masse/(r_mag*r_mag) ;///1000 = masse
+    //std::cout << "force mag" << force_mag<<std::endl;
     //float force_mag = 10000000;
     //Calculate force vector.
-    glm::vec3 force_vec = -force_mag*r_hat;
+    glm::vec3 force_vec = -(float)force_mag*r_hat;
     
     return force_vec;
 };
 
 
-void Body::update(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce)
+void Body::updateForce(float t,float dt, std::vector<Body> bodies,glm::vec3 aforce)
 {
     glm::vec3 Force = aforce;
 
     for(int i = 0; i<bodies.size();i++)
     {
-        Force += gforce(*this,bodies[0]);
+        if(bodies[i].position==this->position){continue;}
+        Force += gforce(*this,bodies[i]);
     }
 
-    this->initSpeed+=Force/(float)(bodies.size()+1)/this->masse*(float)dt;
+    this->initSpeed+=Force/this->masse*(float)dt;
+    std::cout<<this->initSpeed<<std::endl;
+}
+
+
+void Body::updatePosition(float t,float dt)
+{
     this->position+=this->initSpeed*(float)dt;
 
     PreviousPos apreviousPos = {this->position,this->initSpeed,t};
     this->previousPos.push_back(apreviousPos);
     if(this->previousPos.size()>TRAILSIZE*10*length(this->position)/UNITEASTRONOMIQUE){this->previousPos.erase(previousPos.begin());}
+}
+
+
+
+
+
+
+class Sature: public Body
+{
+    public : 
+        Saturn():Body(MyShader *engineShader,std::string vertexShader,std::string fragShader, float scale,float masse,vec3 position,vec3 initSpeed){};
+        void renderRing(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+        {
+            MVMatrix = translate(MVMatrix, this->position/UNITEASTRONOMIQUE);
+            MVMatrix = scale(MVMatrix,this->scale/UNITEASTRONOMIQUE);
+            engineShader->use();
+            this->myEngine->renderDisk(MVMatrix,ProjMatrix,NormalMatrix);
+
+        };
 
 
 }
