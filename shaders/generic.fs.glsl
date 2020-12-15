@@ -14,6 +14,6 @@ float particule(vec3 aposition)
 
 void main()
 {
-   fFragColor = vec4(particule(outPos)*vec3(1,1,0.1),1);
+   fFragColor = vec4(particule(outPos)*vec3(1,1,0.1),0);
 
 }

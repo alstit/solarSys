@@ -42,7 +42,7 @@ inline bool instanceof(const T*) {
 
 int main(int argv,char** argc) {
     // Initialize SDL and open a window
-    SDLWindowManager windowManager(800, 600, "GLImac");
+    SDLWindowManager windowManager(1024, 1024, "GLImac");
 
     // Initialize glew for OpenGL3+ support
     GLenum glewInitError = glewInit();
@@ -69,12 +69,14 @@ int main(int argv,char** argc) {
     std::shared_ptr<TrailShader> atrailShader = std::shared_ptr<TrailShader>(new TrailShader);
     std::shared_ptr<GenericShader> aflareShader = std::shared_ptr<GenericShader>(new GenericShader);
     std::shared_ptr<GenericShader> abloomShader = std::shared_ptr<GenericShader>(new GenericShader);
+    std::shared_ptr<GenericShader> aSaturnRingShader = std::shared_ptr<GenericShader>(new GenericShader);
 
     MyShader flareShader(aflareShader);
     MyShader sunShader(asunShader);
     MyShader planetShader(aplanetShader);
     MyShader trailShader(atrailShader);
     MyShader bloomShader(abloomShader);
+    MyShader saturnRingShader(aSaturnRingShader);
 
     engine.loadTrailShader(&trailShader,"trail","trail");
 
@@ -96,8 +98,8 @@ int main(int argv,char** argc) {
     glm::mat4 ProjMatrix,MVMatrix,NormalMatrix;
     
     float fov = 70;
-    ProjMatrix = glm::perspective(glm::radians(fov),4.f/3.f,(float)0.00000930951,(float)100);
-
+    //ProjMatrix = glm::perspective(glm::radians(fov),4.f/3.f,(float)0.00000930951,(float)100);
+    ProjMatrix = glm::perspective(glm::radians(fov),1.f,(float)0.00000930951,(float)100);
     srand (time(NULL));
 
     std::vector<Body>  bodies;
@@ -115,8 +117,10 @@ int main(int argv,char** argc) {
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
     bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    Saturn aSaturn = ( Saturn(&engine,&planetShader,"3D","planetNormal",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    Saturn aSaturn = ( Saturn(&engine,&planetShader,&saturnRingShader,"3D","planetNormal","generic","saturnRing",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+     //bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     
+
 
 
     camera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
@@ -223,20 +227,20 @@ int main(int argv,char** argc) {
 
         for (int i = 0 ; i< bodies.size();i++)
         {
-            if(camera.getType()=="TrackballCamera")
-            {
-                MVMatrix =bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
-            }
-            else{MVMatrix = bodies[i].viewMatrixBody(  &windowManager,camera.getViewMatrix() );
-            }
             aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
-            NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
-            bodies[i].render(MVMatrix,ProjMatrix,NormalMatrix);
+            bodies[i].render(  &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
+
+            //NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
+            //bodies[i].render(MVMatrix,ProjMatrix,NormalMatrix);
             
     
-            if(camera.getType()=="TrackballCamera")
+
+
+           /////////trails 
+           /* if(camera.getType()=="TrackballCamera")
             {
                 matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov));
+                
             }
             else {matrix = bodies[i].viewMatrixTrail(  &windowManager,camera.getViewMatrix() );}
 
@@ -245,10 +249,10 @@ int main(int argv,char** argc) {
                 NormalMatrix = glm::transpose(glm::inverse(matrix[j]));
                 atrailShader->setTime(t - bodies[i].previousPos[j].time);
                 engine.renderTrail(matrix[j],ProjMatrix,NormalMatrix,t - bodies[i].previousPos[j].time);
-            }
+            }*/
         }
-
-
+        aplanetShader->setUniforms(test,test,glm::vec4(-aSaturn.position[0]/UNITEASTRONOMIQUE,-aSaturn.position[1]/UNITEASTRONOMIQUE,-aSaturn.position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
+        aSaturn.render( &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
         
         /////bloom effect
         if(camera.getType()=="TrackballCamera"){MVMatrix = abloom.viewMatrix(camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov),&camera,bodies[0]);}
@@ -276,11 +280,13 @@ int main(int argv,char** argc) {
         {
             bodies[i].updateForce(t,dt,bodies,glm::vec3(0,0,0));
         }
+        aSaturn.updateForce(t,dt,bodies,glm::vec3(0,0,0));
 
         for(int i =0;i<bodies.size();i++)
         {
             bodies[i].updatePosition(t,dt);
         }
+        aSaturn.updatePosition(t,dt);
         PreviousT= t;
 
 

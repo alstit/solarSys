@@ -15,5 +15,5 @@ float disappear()
 }
 void main()
 {
-    fFragColor=disappear()*vec4(1,1,1,1);
+    fFragColor=disappear()*vec4(1,1,1,0);
 }
