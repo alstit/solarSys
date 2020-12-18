@@ -230,6 +230,7 @@ class PlanetShader:public GenericShader
         this->uniforms["uShininess"] = glGetUniformLocation(this->program->getGLId(),"uShininess");
         this->uniforms["uLightPos_vs"] = glGetUniformLocation(this->program->getGLId(),"uLightPos_vs");
         this->uniforms["uLightIntensity"] = glGetUniformLocation(this->program->getGLId(),"uLightIntensity");
+        this->uniforms["uTexture"] = glGetUniformLocation(this->program->getGLId(), "uTexture");
     };
 
     void setUniforms(glm::vec3 uKd,glm::vec3 uKs, glm::vec4 uLightPos_vs,glm::vec3 uLightIntensity, float uShininess)
@@ -241,6 +242,43 @@ class PlanetShader:public GenericShader
         glUniform3f(this->uniforms["uKs"],uKs[0],uKs[1],uKs[2]);        
         glUniform4f(this->uniforms["uLightPos_vs"],uLightPos_vs[0],uLightPos_vs[1],uLightPos_vs[2],uLightPos_vs[3]);
         glUniform3f(this->uniforms["uLightIntensity"],uLightIntensity[0],uLightIntensity[1],uLightIntensity[2]);
+        glUniform1i(this->uniforms["uTexture"],0);
+        
+    };
+
+};
+
+
+class SaturnRingShader:public GenericShader
+{
+    public:
+    SaturnRingShader():GenericShader(){};
+
+    void getUniforms()
+    {
+
+        this->program->use();
+        //this->uniforms["uTime"] = (glGetUniformLocation(this->program->getGLId(), "uTime"));
+        this->uniforms["uMVPMatrix"] = glGetUniformLocation(this->program->getGLId(), "uMVPMatrix");
+        this->uniforms["uMVMatrix"] = glGetUniformLocation(this->program->getGLId(), "uMVMatrix");
+        this->uniforms["uNormalMatrix"] = glGetUniformLocation(this->program->getGLId(), "uNormalMatrix");
+        this->uniforms["uKd"] = glGetUniformLocation(this->program->getGLId(), "uKd");
+        this->uniforms["uKs"] = glGetUniformLocation(this->program->getGLId(),"uKs");
+        this->uniforms["uShininess"] = glGetUniformLocation(this->program->getGLId(),"uShininess");
+        this->uniforms["uLightPos_vs"] = glGetUniformLocation(this->program->getGLId(),"uLightPos_vs");
+        this->uniforms["uLightIntensity"] = glGetUniformLocation(this->program->getGLId(),"uLightIntensity");
+    };
+
+    void setUniforms(glm::vec3 uKd,glm::vec3 uKs, glm::vec4 uLightPos_vs,glm::vec3 uLightIntensity, float uShininess)
+    {
+        this->program->use();
+
+        glUniform1f(this->uniforms["uShininess"],uShininess);  
+        glUniform3f(this->uniforms["uKd"],uKd[0],uKd[1],uKd[2]);
+        glUniform3f(this->uniforms["uKs"],uKs[0],uKs[1],uKs[2]);        
+        glUniform4f(this->uniforms["uLightPos_vs"],uLightPos_vs[0],uLightPos_vs[1],uLightPos_vs[2],uLightPos_vs[3]);
+        glUniform3f(this->uniforms["uLightIntensity"],uLightIntensity[0],uLightIntensity[1],uLightIntensity[2]);
+        
     };
 
 };

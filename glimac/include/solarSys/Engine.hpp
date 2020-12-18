@@ -87,7 +87,7 @@ class Engine
         glEnableVertexAttribArray(2);
 
         glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,position));
-        glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,color));
+        glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,color));
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER,0);
 
@@ -137,6 +137,10 @@ class Engine
     void renderPlanet(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
     {
         this->planetShaders->use();
+
+
+
+
 
         planetShaders->renderMVP(MVMatrix,ProjMatrix,NormalMatrix);                       
 

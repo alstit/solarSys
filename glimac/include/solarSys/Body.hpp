@@ -31,9 +31,39 @@ class Body
         std::vector<PreviousPos> previousPos;
         Engine* myEngine;
         MyShader* myShader;
+        //std::unique_ptr<Image> texture
+        GLuint* texture_id= new GLuint();
 
-        Body(Engine* engine ,MyShader *engineShader,std::string vertexShader,std::string fragShader, float scale,float masse,vec3 position,vec3 initSpeed)
+
+        Body(Engine* engine ,MyShader *engineShader,std::string vertexShader,std::string fragShader, float scale,float masse,vec3 position,vec3 initSpeed,std::shared_ptr<Image> texture)
         {
+            
+            ///////bind texture
+
+            
+            glGenTextures(1, texture_id);
+            
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, *(this->texture_id));
+
+            glTexImage2D( 	GL_TEXTURE_2D,
+                        0,
+                        GL_RGBA,
+                        texture->getWidth(),
+                        texture->getHeight(),
+                        0,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        texture->getPixels());
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D,0);
+
+
+            ////////fill object
             this->myEngine = engine;
             this->myShader = engineShader;
             //engine->planetShaders=aShader;
@@ -83,7 +113,7 @@ class Body
         }
         
 
-        glm::mat4 render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader)
+        glm::mat4 render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader,std::shared_ptr<PlanetShader> currentPlanetShader)
         {
              glm::mat4 MVMatrix;
             
@@ -93,12 +123,25 @@ class Body
             }
             else {MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix() );}
 
+            this->myEngine->planetShaders->use();
 
+            ////bind texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, *(this->texture_id)); // la texture earthTexture est bindée sur l'unité GL_TEXTURE0
+
+            //send texture to uniform
+            glUniform1i(currentPlanetShader->uniforms["uTexture"],0);
 
             //MVMatrix = this->viewMatrixBody(  &windowManager,acamera.getViewMatrix() )
 
             glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
             this->myEngine->renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+
+            //unbind texture
+            glActiveTexture(GL_TEXTURE0);              
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+
             this->renderTrail(acamera,windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
 
 
@@ -177,7 +220,7 @@ void Body::updatePosition(float t,float dt)
 
     PreviousPos apreviousPos = {this->position,this->initSpeed,t};
     this->previousPos.push_back(apreviousPos);
-    if(this->previousPos.size()>TRAILSIZE*10*length(this->position)/UNITEASTRONOMIQUE){this->previousPos.erase(previousPos.begin());}
+    if(this->previousPos.size()>TRAILSIZE*(float)(glm::length(this->position)/UNITEASTRONOMIQUE)*10*length(this->position)/UNITEASTRONOMIQUE){this->previousPos.erase(previousPos.begin());}
 }
 
 
@@ -189,7 +232,7 @@ class Saturn: public Body
 {
     MyShader* ringShaders;
     public : 
-        Saturn(Engine* engine ,MyShader *engineShader,MyShader* aringShader,std::string PlanetVertexShader,std::string PlanetFragShader,std::string RingVertexShader,std::string RingFragShader, float scale,float masse,vec3 position,vec3 initSpeed):Body(engine ,engineShader,PlanetVertexShader,PlanetFragShader,scale,masse,position,initSpeed)
+        Saturn(Engine* engine ,MyShader *engineShader,MyShader* aringShader,std::string PlanetVertexShader,std::string PlanetFragShader,std::string RingVertexShader,std::string RingFragShader, float scale,float masse,vec3 position,vec3 initSpeed,std::shared_ptr<Image> texture):Body(engine ,engineShader,PlanetVertexShader,PlanetFragShader,scale,masse,position,initSpeed,texture)
         {
             this->myEngine->flareShaders = aringShader;
             this->ringShaders = aringShader;
@@ -202,17 +245,20 @@ class Saturn: public Body
         void renderRing(glm::mat4 MVMatrix,glm::mat4 ProjMatrix, glm::mat4 NormalMatrix,SDLWindowManager* windowManager)
         {
             //MVMatrix = translate(MVMatrix, this->position/UNITEASTRONOMIQUE);
+            MVMatrix = rotate(MVMatrix,0.3f, glm::vec3(1,1,1));
             MVMatrix = rotate(MVMatrix,-windowManager->getTime(), glm::vec3(0,1,0));/// reverse Planete self rotation
-            MVMatrix = glm::scale(MVMatrix,30.0f*glm::vec3(1,1,1));
+            MVMatrix = glm::scale(MVMatrix,3*GRAPHIC_SCALE*glm::vec3(1,1,1));
             
+            NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
 
             this->myEngine->renderDisk(MVMatrix,ProjMatrix,NormalMatrix);
 
         };
-        void render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader)
+        void render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader,std::shared_ptr<PlanetShader> currentPlanetShader)
         {
             this->myEngine->flareShaders  = this->ringShaders;
-            glm::mat4 MVMatrix = this->Body::render(acamera, windowManager, ProjMatrix,bodies, bodyCam,atrailShader);
+            glm::mat4 MVMatrix = this->Body::render(acamera, windowManager, ProjMatrix,bodies, bodyCam,atrailShader,currentPlanetShader);
+
             MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix() );
             this->renderRing(MVMatrix,ProjMatrix,glm::mat4(),windowManager);
         }

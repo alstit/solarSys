@@ -67,7 +67,7 @@ namespace glimac {
         float teta = 0;
         float rayon = radius;
 
-        glm::vec3 color = glm::vec3(0,0,0);
+        glm::vec3 color = glm::vec3(0,0,-1);
 
         Vertex3DColor vertices[3*Ntriangle];
         this->m_nVertexCount = 3*Ntriangle;
