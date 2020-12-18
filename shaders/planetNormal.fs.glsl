@@ -15,6 +15,8 @@ uniform float uShininess;
 uniform vec4 uLightPos_vs;
 uniform vec3 uLightIntensity; 
 
+uniform sampler2D uTexture;
+
 vec3 blinnPhong()
 {
 
@@ -40,8 +42,9 @@ vec3 blinnPhong()
 void main()
 {
     
-
+	vec4 aTexture = texture(uTexture ,color);
     //fFragColor = vec3(color,1);
 	//fFragColor = blinnPhong();
-	fFragColor = vec4(vec3(gl_FragCoord.z), 1.0);
+	fFragColor = vec4(vec3(blinnPhong().x*aTexture.x,blinnPhong().y*aTexture.y,blinnPhong().z*aTexture.z), 1.0);
+
 }

@@ -69,7 +69,7 @@ int main(int argv,char** argc) {
     std::shared_ptr<TrailShader> atrailShader = std::shared_ptr<TrailShader>(new TrailShader);
     std::shared_ptr<GenericShader> aflareShader = std::shared_ptr<GenericShader>(new GenericShader);
     std::shared_ptr<GenericShader> abloomShader = std::shared_ptr<GenericShader>(new GenericShader);
-    std::shared_ptr<GenericShader> aSaturnRingShader = std::shared_ptr<GenericShader>(new GenericShader);
+    std::shared_ptr<SaturnRingShader> aSaturnRingShader = std::shared_ptr<SaturnRingShader>(new SaturnRingShader);
 
     MyShader flareShader(aflareShader);
     MyShader sunShader(asunShader);
@@ -102,31 +102,62 @@ int main(int argv,char** argc) {
     ProjMatrix = glm::perspective(glm::radians(fov),1.f,(float)0.00000930951,(float)100);
     srand (time(NULL));
 
+std::shared_ptr<Image> textureMercury = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/mercurymap.jpg");
+std::shared_ptr<Image> textureVenus = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/venusmap.jpg");
+std::shared_ptr<Image> textureEarth = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/EarthMap.jpg");
+std::shared_ptr<Image> textureMars = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/marsmap.jpg");
+std::shared_ptr<Image> textureJupiter = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/jupitermap.jpg");
+std::shared_ptr<Image> textureSaturn = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/saturnmap.jpg");    
+std::shared_ptr<Image> textureUranus = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/uranusmap.jpg");    
+std::shared_ptr<Image> textureNeptune = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/neptunemap.jpg");    
+std::shared_ptr<Image> texturePluto = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/plutomap.jpg");   
+   
+   
+   //////////make planets
     std::vector<Body>  bodies;
 
-
-    bodies.push_back( Body(&engine,&sunShader,"3D","directionallight",1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0)));
+    bodies.push_back( Body(&engine,&sunShader,"3D","directionallight",1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0),textureEarth));
     float theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back(  Body(&engine,&planetShader,"3D","planetNormal",4879.e3*GRAPHIC_SCALE/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)49.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back(  Body(&engine,&planetShader,"3D","planetNormal",4879.e3*GRAPHIC_SCALE/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMercury));
     theta =theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12104.e3*GRAPHIC_SCALE/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12104.e3*GRAPHIC_SCALE/2.,4.87e24,(float)108.2e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureVenus));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12756.e3*GRAPHIC_SCALE/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12756.e3*GRAPHIC_SCALE/2.,5.97e24,(float)149.6e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureEarth));
+     //bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",12756.e3*GRAPHIC_SCALE/2/3.,0.073e24,(float)149.6003e9*vec3(cos(theta),sin(theta),0),(float)29.8e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureEarth));   
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",6792.e3*GRAPHIC_SCALE/2.,0.642e24,(float)227.9e9*vec3(cos(theta),sin(theta),0),(float)24.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",6792.e3*GRAPHIC_SCALE/2.,0.642e24,(float)227.9e9*vec3(cos(theta),sin(theta),0),(float)24.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMars));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureJupiter));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
-    Saturn aSaturn = ( Saturn(&engine,&planetShader,&saturnRingShader,"3D","planetNormal","generic","saturnRing",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
+    Saturn aSaturn = ( Saturn(&engine,&planetShader,&saturnRingShader,"3D","planetNormal","saturnRing","saturnRing",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureSaturn));
      //bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
     
 
 
+    /////random asteroids
+    /*float minDistance = 280;
+    float maxDistance = 300;
+    float massmin = 0.330;
+    float massmax = 3.30;
+    for(int i = 0;i<3;i++)
+    {
+        float r = (minDistance + static_cast <float> (rand()) / (static_cast <float> ((float)RAND_MAX/(maxDistance-minDistance))))*1e9;//metres
+        float theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+        float mass = (massmin + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(massmax-massmin))))*1e23;//KG
+        float speed = glm::sqrt(bodies[0].masse/r)/1e5;//
+
+        cout<<"speed position"<<speed<<" "<<r<<"randum "<<(maxDistance-minDistance)<<endl;
+        float ecc = 1;
+        //float ecc = ((double) rand() / (RAND_MAX)) + 1;
+        bodies.push_back( Body( &engine,&planetShader,"3D","planetNormal",4879.e3*GRAPHIC_SCALE/2.,mass,r*vec3(cos(theta),sin(theta),0),ecc*speed*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMercury));
+    }*/
+
+
+
 
     camera.moveFront(-1392684e3*100/UNITEASTRONOMIQUE);
-
-
     glm::vec3 test = glm::vec3(1,1,1);
+
     asunShader->setUniforms(test,test,test,test,1.f);
     aplanetShader->setUniforms(test,test,glm::vec4(1,0,0,1),glm::vec3(1,1,1),1.f);
 
@@ -225,10 +256,11 @@ int main(int argv,char** argc) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+
         for (int i = 0 ; i< bodies.size();i++)
         {
-            aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
-            bodies[i].render(  &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
+            aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),(float)i*i*glm::vec3(1,1,1),1.f);
+            bodies[i].render(  &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader,aplanetShader);
 
             //NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
             //bodies[i].render(MVMatrix,ProjMatrix,NormalMatrix);
@@ -251,8 +283,9 @@ int main(int argv,char** argc) {
                 engine.renderTrail(matrix[j],ProjMatrix,NormalMatrix,t - bodies[i].previousPos[j].time);
             }*/
         }
-        aplanetShader->setUniforms(test,test,glm::vec4(-aSaturn.position[0]/UNITEASTRONOMIQUE,-aSaturn.position[1]/UNITEASTRONOMIQUE,-aSaturn.position[2]/UNITEASTRONOMIQUE,1),glm::vec3(1,1,1),1.f);
-        aSaturn.render( &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
+        aplanetShader->setUniforms(test,test,glm::vec4(-aSaturn.position[0]/UNITEASTRONOMIQUE,-aSaturn.position[1]/UNITEASTRONOMIQUE,-aSaturn.position[2]/UNITEASTRONOMIQUE,1),6.0f*6.0f*glm::vec3(1,1,1),1.f);
+        aSaturnRingShader->setUniforms(test,test,glm::vec4(-aSaturn.position[0]/UNITEASTRONOMIQUE,-aSaturn.position[1]/UNITEASTRONOMIQUE,-aSaturn.position[2]/UNITEASTRONOMIQUE,1),6.0f*6.0f*glm::vec3(1,1,1),1.f);
+        aSaturn.render( &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader,aplanetShader);
         
         /////bloom effect
         if(camera.getType()=="TrackballCamera"){MVMatrix = abloom.viewMatrix(camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov),&camera,bodies[0]);}
@@ -260,8 +293,10 @@ int main(int argv,char** argc) {
         abloom.render(&engine, &bloomShader,MVMatrix ,ProjMatrix, glm::mat4());
 
         ////flare effect
+        glm::vec4 sunPositionToCamera;
         glm::vec4 tempsSunCal = glm::vec4(bodies[0].position[0],bodies[0].position[1],bodies[0].position[2],1)/UNITEASTRONOMIQUE;
-        glm::vec4 sunPositionToCamera = ProjMatrix*bodies[0].viewMatrixBody(  &windowManager,camera.getViewMatrix() ) * tempsSunCal;
+        if(camera.getType()=="TrackballCamera"){sunPositionToCamera = ProjMatrix*bodies[0].viewMatrixBody(&windowManager,camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov)) * tempsSunCal;}
+        else{sunPositionToCamera = ProjMatrix*bodies[0].viewMatrixBody(  &windowManager,camera.getViewMatrix() ) * tempsSunCal;}
         std::vector<glm::mat4> lensMatrix=aflare.viewMatrix(sunPositionToCamera*UNITEASTRONOMIQUE);
 
         for(int i = 0;i<lensMatrix.size();i++)
@@ -276,7 +311,7 @@ int main(int argv,char** argc) {
 
 
 
-        for (int i = 1;i< bodies.size();i++)
+        for (int i = 1;i< bodies.size();i++)//////////adapt lens flare position before moving the sun 
         {
             bodies[i].updateForce(t,dt,bodies,glm::vec3(0,0,0));
         }

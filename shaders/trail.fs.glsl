@@ -10,10 +10,11 @@ out vec4 fFragColor;
 float disappear()
 {
     float coef;
-    coef = 1./(2.*uTime);
+    coef = 1./(5.*uTime);
+
     return coef;
 }
 void main()
 {
-    fFragColor=disappear()*vec4(1,1,1,0);
+    fFragColor=disappear()*vec4(0.3,0.5,0.5,0);
 }
