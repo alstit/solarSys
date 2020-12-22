@@ -102,21 +102,22 @@ int main(int argv,char** argc) {
     ProjMatrix = glm::perspective(glm::radians(fov),1.f,(float)0.00000930951,(float)100);
     srand (time(NULL));
 
-std::shared_ptr<Image> textureMercury = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/mercurymap.jpg");
-std::shared_ptr<Image> textureVenus = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/venusmap.jpg");
-std::shared_ptr<Image> textureEarth = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/EarthMap.jpg");
-std::shared_ptr<Image> textureMars = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/marsmap.jpg");
-std::shared_ptr<Image> textureJupiter = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/jupitermap.jpg");
-std::shared_ptr<Image> textureSaturn = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/saturnmap.jpg");    
-std::shared_ptr<Image> textureUranus = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/uranusmap.jpg");    
-std::shared_ptr<Image> textureNeptune = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/neptunemap.jpg");    
-std::shared_ptr<Image> texturePluto = loadImage("/media/sf_virtualFolder/TP_openGL/GLImac-Template/assets/texture/plutomap.jpg");   
+std::shared_ptr<Image> textureMercury = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/mercurymap.jpg");
+std::shared_ptr<Image> textureVenus = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/venusmap.jpg");
+std::shared_ptr<Image> textureEarth = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/EarthMap.jpg");
+std::shared_ptr<Image> textureMars = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/marsmap.jpg");
+std::shared_ptr<Image> textureJupiter = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/jupitermap.jpg");
+std::shared_ptr<Image> textureSaturn = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/saturnmap.jpg");    
+std::shared_ptr<Image> textureUranus = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/uranusmap.jpg");    
+std::shared_ptr<Image> textureNeptune = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/neptunemap.jpg");    
+std::shared_ptr<Image> texturePluto = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/plutomap.jpg");   
    
-   
+std::shared_ptr<Image> textureMoon = loadImage("/home/als/TP_openGL/GLImac-Template/assets/texture/MoonMap.jpg");   
+
    //////////make planets
     std::vector<Body>  bodies;
 
-    bodies.push_back( Body(&engine,&sunShader,"3D","directionallight",1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0),textureEarth));
+    bodies.push_back( Body(&engine,&sunShader,"3D","sun",1392684e3/2.,1.9891e30,vec3(0,0,0),vec3(0,0,0),textureEarth));
     float theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
     bodies.push_back(  Body(&engine,&planetShader,"3D","planetNormal",4879.e3*GRAPHIC_SCALE/2.,0.330e24,(float)57.9e9*vec3(cos(theta),sin(theta),0),(float)35.e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMercury));
     theta =theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
@@ -130,9 +131,23 @@ std::shared_ptr<Image> texturePluto = loadImage("/media/sf_virtualFolder/TP_open
     bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,(float)778.6e9*vec3(cos(theta),sin(theta),0),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureJupiter));
     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
     Saturn aSaturn = ( Saturn(&engine,&planetShader,&saturnRingShader,"3D","planetNormal","saturnRing","saturnRing",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureSaturn));
-     //bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",120536e3*GRAPHIC_SCALE/2.,568e24,(float)1433.5e9*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0)));
-    
+    theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    bodies.push_back( Body(&engine,&planetShader,"3D","planetNormal",142984e3*GRAPHIC_SCALE/2.,18982e24,vec3((float)778.6e9*cos(theta),(float)778.6e9*sin(theta),UNITEASTRONOMIQUE),(float)13.1e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureJupiter));
 
+     
+     
+    ///satelites 
+    std::vector<Moon> moonVectors;
+    
+    //earth moon
+    moonVectors.push_back( Moon(1,&bodies[3],&engine,&planetShader,"3D","planetNormal",3000e3*GRAPHIC_SCALE/2.,568e24,(float)300.9e7*vec3(1,0,0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMoon));
+    //saturns' moon
+     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    moonVectors.push_back( Moon(1,&aSaturn,&engine,&planetShader,"3D","planetNormal",40000e3*GRAPHIC_SCALE/2.,568e24,(float)3000e7*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMoon));  
+     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    moonVectors.push_back( Moon(0.5,&aSaturn,&engine,&planetShader,"3D","planetNormal",50000e3*GRAPHIC_SCALE/2.,568e24,(float)5000e7*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMoon));      
+     theta = theta = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.14));
+    moonVectors.push_back( Moon(0.2,&aSaturn,&engine,&planetShader,"3D","planetNormal",90000e3*GRAPHIC_SCALE/2.,568e24,(float)9000e7*vec3(cos(theta),sin(theta),0),(float)9.7e3*vec3(cos(theta+M_PI/2),sin(theta+M_PI/2),0),textureMoon)); 
 
     /////random asteroids
     /*float minDistance = 280;
@@ -261,6 +276,7 @@ std::shared_ptr<Image> texturePluto = loadImage("/media/sf_virtualFolder/TP_open
         {
             aplanetShader->setUniforms(test,test,glm::vec4(-bodies[i].position[0]/UNITEASTRONOMIQUE,-bodies[i].position[1]/UNITEASTRONOMIQUE,-bodies[i].position[2]/UNITEASTRONOMIQUE,1),(float)i*i*glm::vec3(1,1,1),1.f);
             bodies[i].render(  &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader,aplanetShader);
+           
 
             //NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
             //bodies[i].render(MVMatrix,ProjMatrix,NormalMatrix);
@@ -287,6 +303,11 @@ std::shared_ptr<Image> texturePluto = loadImage("/media/sf_virtualFolder/TP_open
         aSaturnRingShader->setUniforms(test,test,glm::vec4(-aSaturn.position[0]/UNITEASTRONOMIQUE,-aSaturn.position[1]/UNITEASTRONOMIQUE,-aSaturn.position[2]/UNITEASTRONOMIQUE,1),6.0f*6.0f*glm::vec3(1,1,1),1.f);
         aSaturn.render( &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader,aplanetShader);
         
+        for(int moons= 0 ; moons<moonVectors.size();moons++){
+        aplanetShader->setUniforms(test,test,glm::vec4(-aSaturn.position[0]/UNITEASTRONOMIQUE,-aSaturn.position[1]/UNITEASTRONOMIQUE,-aSaturn.position[2]/UNITEASTRONOMIQUE,1),6.0f*6.0f*glm::vec3(1,1,1),1.f);
+        moonVectors[moons].render( &camera,&windowManager,ProjMatrix,bodies,bodyCam,atrailShader,aplanetShader);
+        }
+
         /////bloom effect
         if(camera.getType()=="TrackballCamera"){MVMatrix = abloom.viewMatrix(camera.getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,fov),&camera,bodies[0]);}
         else{MVMatrix = abloom.viewMatrix(camera.getViewMatrix(),&camera,bodies[0]);}
@@ -322,6 +343,7 @@ std::shared_ptr<Image> texturePluto = loadImage("/media/sf_virtualFolder/TP_open
             bodies[i].updatePosition(t,dt);
         }
         aSaturn.updatePosition(t,dt);
+        //aMoon.updatePosition(t,dt);
         PreviousT= t;
 
 
