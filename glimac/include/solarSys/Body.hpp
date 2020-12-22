@@ -265,3 +265,85 @@ class Saturn: public Body
 
 
 };
+
+//////satellite position is relative to theirs planet
+class Moon : public Body
+{
+    public:
+        Body* planet;
+        glm::mat4 myMVMatrix;
+        float rotSpeed;
+        
+        void updatePosition(float t,float dt)
+        {
+            glm::vec4 aPosition = myMVMatrix*glm::vec4(0,0,0,1);
+            glm::vec3 aPosition3D = glm::vec3(aPosition[0],aPosition[1],aPosition[2]);
+
+            PreviousPos apreviousPos = {aPosition3D,this->initSpeed,t};
+            this->previousPos.push_back(apreviousPos);
+            if(this->previousPos.size()>TRAILSIZE*(float)(glm::length(this->position)/UNITEASTRONOMIQUE)*10*length(this->position)/UNITEASTRONOMIQUE)
+                {this->previousPos.erase(previousPos.begin());}
+        }
+
+
+        Moon(double arotSpeed,Body* aplanet,Engine* engine ,MyShader *engineShader,std::string PlanetVertexShader,std::string PlanetFragShader, float scale,float masse,vec3 position,vec3 initSpeed,std::shared_ptr<Image> texture):Body(engine ,engineShader,PlanetVertexShader,PlanetFragShader,scale,masse,position,initSpeed,texture)
+        {
+            this->planet = aplanet;
+            this->rotSpeed = arotSpeed;
+        }   
+
+        glm::mat4 viewMatrixBody(SDLWindowManager* windowManager,glm::mat4 MVMatrix)
+        {
+
+
+
+            this->myEngine->planetShaders = myShader;
+            MVMatrix = translate(MVMatrix,this->planet->position/UNITEASTRONOMIQUE);//move to relative planet
+            MVMatrix = rotate(MVMatrix, this->rotSpeed*windowManager->getTime(), glm::vec3(0,0,1));///round planet rotation
+            MVMatrix = translate(MVMatrix,this->position/UNITEASTRONOMIQUE);///move to position distance from planet
+            //MVMatrix = rotate(MVMatrix, -windowManager->getTime(), glm::vec3(0,1,0));///own rotation
+            MVMatrix = glm::scale(MVMatrix, this->scale/UNITEASTRONOMIQUE*glm::vec3(1, 1, 1));
+            this->myMVMatrix = MVMatrix;
+            return MVMatrix;
+        }
+
+
+
+        glm::mat4 render(Camera* acamera,SDLWindowManager* windowManager,glm::mat4 ProjMatrix,std::vector<Body> bodies,int bodyCam,std::shared_ptr<TrailShader> atrailShader,std::shared_ptr<PlanetShader> currentPlanetShader)
+        {
+             glm::mat4 MVMatrix;
+            
+            if(acamera->getType()=="TrackballCamera")
+            {
+                MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix(bodies[bodyCam].position,-1392684e3*100/UNITEASTRONOMIQUE,1));
+            }
+            else {MVMatrix = this->viewMatrixBody(  windowManager,acamera->getViewMatrix() );}
+
+            this->myEngine->planetShaders->use();
+
+            ////bind texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, *(this->texture_id)); // la texture earthTexture est bindée sur l'unité GL_TEXTURE0
+
+            //send texture to uniform
+            glUniform1i(currentPlanetShader->uniforms["uTexture"],0);
+
+            //MVMatrix = this->viewMatrixBody(  &windowManager,acamera.getViewMatrix() )
+
+            glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
+            this->myEngine->renderPlanet(MVMatrix,ProjMatrix,NormalMatrix);
+
+            //unbind texture
+            glActiveTexture(GL_TEXTURE0);              
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+
+            this->renderTrail(acamera,windowManager,ProjMatrix,bodies,bodyCam,atrailShader);
+
+
+
+            return MVMatrix;////// for class who inherites from this one
+        }
+
+
+};
