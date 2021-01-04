@@ -64,10 +64,13 @@ glm::mat4  TrackballCamera::getViewMatrix()
 
 glm::mat4  TrackballCamera::getViewMatrix(glm::vec3 lookat,float distance,float fov) 
 {
-    glm::mat4 matrix = glm::translate(glm::mat4(),-lookat/UNITEASTRONOMIQUE);
-    matrix = glm::translate(matrix,glm::vec3(0,0,this->m_fDistance));
+    //glm::mat4 matrix = glm::translate(glm::mat4(),glm::vec3(0,0,this->m_fDistance));
+     //glm::mat4 matrix = glm::translate(glm::mat4(),-lookat/UNITEASTRONOMIQUE+glm::vec3(0,0,this->m_fDistance));
+    //matrix = glm::translate(matrix,glm::vec3(0,0,this->m_fDistance));
+    glm::mat4 matrix =  glm::lookAt(lookat/UNITEASTRONOMIQUE-glm::vec3(0,0,this->m_fDistance),lookat/UNITEASTRONOMIQUE,(glm::vec3(0,1,0)));
+    
     matrix =  glm::rotate(matrix,this->m_fAngleX, glm::vec3(1,0,0));
-    matrix = glm::rotate(matrix, this->m_fAngleY, glm::vec3(0,1,0));
+    matrix = glm::rotate(matrix, this->m_fAngleY, glm::vec3(0,0,1));
     //return glm::translate(glm::mat4(),glm::vec3(0,0,3));
     return matrix;
 };

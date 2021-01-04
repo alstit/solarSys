@@ -6,7 +6,8 @@
 
 
 
-namespace glimac {
+namespace glimac 
+{
 
 
     class Vertex3DColor
@@ -94,4 +95,60 @@ namespace glimac {
     };
 
 
+
+
+
+
+
+
+    class Quad 
+    {
+        // Alloue et construit les données (implantation dans le .cpp)
+        void build();
+
+        public:
+            // Constructeur: alloue le tableau de données et construit les attributs des vertex
+            Quad()
+            {
+                build(); // Construction (voir le .cpp)
+            }
+
+            // Renvoit le pointeur vers les données
+            const Vertex3DColor* getDataPointer() const {
+                return &m_Vertices[0];
+            }
+            
+
+            // Renvoit le nombre de vertex
+            GLsizei getVertexCount() const {
+                return m_nVertexCount;
+            }
+
+        private:
+            std::vector<Vertex3DColor> m_Vertices;
+            GLsizei m_nVertexCount =6; // Nombre de sommets
+    };
+        
+
+
+    void Quad::build()
+    {
+        //std::cout<<"hello"<<std::endl;
+        Vertex3DColor vertices[] = {
+            Vertex3DColor(glm::vec3(0.0f,0.0f,0),glm::vec3(1,0,0)),
+            Vertex3DColor(glm::vec3(1.0f,0.0f,0),glm::vec3(0,1,0)),
+            Vertex3DColor(glm::vec3(1.0f ,1.0f,0),glm::vec3(0,0,1)),
+            Vertex3DColor(glm::vec3(1.0f,1.0f,0),glm::vec3(0,0,1)),
+            Vertex3DColor(glm::vec3(0.0f,0.0f,0),glm::vec3(0,1,0)),
+            Vertex3DColor(glm::vec3(0.0f,1.0f,0),glm::vec3(1,0,0))
+        };
+
+        for(int i = 0 ; i< 6;i++)
+        {
+            this->m_Vertices.push_back(vertices[i]);
+        }
+
+    };
 }
+
+

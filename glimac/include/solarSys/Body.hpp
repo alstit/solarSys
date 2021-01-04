@@ -299,7 +299,7 @@ class Moon : public Body
 
             this->myEngine->planetShaders = myShader;
             MVMatrix = translate(MVMatrix,this->planet->position/UNITEASTRONOMIQUE);//move to relative planet
-            MVMatrix = rotate(MVMatrix, this->rotSpeed*windowManager->getTime(), glm::vec3(0,0,1));///round planet rotation
+            MVMatrix = rotate(MVMatrix, this->rotSpeed*windowManager->getTime(), initSpeed);///round planet rotation
             MVMatrix = translate(MVMatrix,this->position/UNITEASTRONOMIQUE);///move to position distance from planet
             //MVMatrix = rotate(MVMatrix, -windowManager->getTime(), glm::vec3(0,1,0));///own rotation
             MVMatrix = glm::scale(MVMatrix, this->scale/UNITEASTRONOMIQUE*glm::vec3(1, 1, 1));

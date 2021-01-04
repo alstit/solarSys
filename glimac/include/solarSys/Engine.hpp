@@ -23,9 +23,11 @@ class Engine
     public:
     Sphere asphere = Sphere(10, 64, 64);// defini par le rayon 
     Disk adisk = Disk(1,30);
+    Quad aquad = Quad();
     MyShader *planetShaders;
     MyShader* trailShaders;
     MyShader* flareShaders; ///// flare shader is actually the diskShader this is an error, flareShader should be called diskShader
+    MyShader* quadShaders;
     FilePath applicationPath;
 
 
@@ -66,6 +68,11 @@ class Engine
         this->flareShaders->load(applicationPath,fragmentPath,vertexPath);
     }   
 
+    void loadQuadShader(MyShader *aQuadShader,std::string vertexPath,std::string fragmentPath)
+    {
+        this->quadShaders = aQuadShader;
+        this->quadShaders->load(applicationPath,fragmentPath,vertexPath);
+    }
 
     void openglBindBuffDisk()
     {
@@ -93,6 +100,32 @@ class Engine
 
     }
 
+    void openglBindBuffQuad()
+    {
+        this->quadShaders->use();
+        this->quadShaders->getUniforms();
+
+        glGenBuffers(1,this->quadShaders->vbo());
+        glBindBuffer(GL_ARRAY_BUFFER,*(this->quadShaders->vbo()));
+        glBufferData(GL_ARRAY_BUFFER,this->aquad.getVertexCount()*sizeof(Quad),this->aquad.getDataPointer(),GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER,0);
+
+
+        glGenVertexArrays(1,this->quadShaders->vao());
+        glBindVertexArray(*(this->quadShaders->vao()));
+        glBindBuffer(GL_ARRAY_BUFFER,*(this->quadShaders->vbo()));
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,position));
+        glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex3DColor),(void*)offsetof(Vertex3DColor,color));
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER,0);
+
+    }
+
     void renderDisk(glm::mat4 MVMatrix, glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
     {
         this->flareShaders->use();
@@ -101,6 +134,26 @@ class Engine
 	    //glDrawArray(primitives, firstVertex,nbrOfVertex)
 	    glDrawArrays(GL_TRIANGLES,0,this->adisk.getVertexCount());
 	    glBindVertexArray(0);
+
+    }
+    void renderQuad(glm::mat4 MVMatrix, glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+    {
+        this->quadShaders->use();
+        quadShaders->renderMVP(MVMatrix,ProjMatrix,NormalMatrix);   
+        glBindVertexArray(*(this->quadShaders->vao()));
+	    //glDrawArray(primitives, firstVertex,nbrOfVertex)
+	    glDrawArrays(GL_TRIANGLES,0,this->aquad.getVertexCount());
+	    glBindVertexArray(0);
+
+    }
+
+    void renderBack(glm::mat4 MVMatrix, glm::mat4 ProjMatrix, glm::mat4 NormalMatrix)
+    {
+        this->quadShaders->use();
+        quadShaders->renderMVP(MVMatrix,ProjMatrix,NormalMatrix);   
+        glBindVertexArray(*(this->planetShaders->vao()));
+        glDrawArrays(GL_TRIANGLES,0,this->asphere.getVertexCount());
+        glBindVertexArray(0);
 
     }
 

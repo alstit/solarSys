@@ -282,3 +282,34 @@ class SaturnRingShader:public GenericShader
     };
 
 };
+
+
+
+
+
+class BackgroundShader:public GenericShader
+{
+    public:
+    BackgroundShader():GenericShader(){};
+
+    void getUniforms()
+    {
+
+        this->program->use();
+        //this->uniforms["uTime"] = (glGetUniformLocation(this->program->getGLId(), "uTime"));
+        this->uniforms["uMVPMatrix"] = glGetUniformLocation(this->program->getGLId(), "uMVPMatrix");
+        this->uniforms["uMVMatrix"] = glGetUniformLocation(this->program->getGLId(), "uMVMatrix");
+        this->uniforms["uNormalMatrix"] = glGetUniformLocation(this->program->getGLId(), "uNormalMatrix");
+
+        this->uniforms["uTexture"] = glGetUniformLocation(this->program->getGLId(), "uTexture");
+    };
+
+    void setUniforms(glm::vec3 uKd,glm::vec3 uKs, glm::vec4 uLightPos_vs,glm::vec3 uLightIntensity, float uShininess)
+    {
+        this->program->use();
+
+        glUniform1i(this->uniforms["uTexture"],0);
+        
+    };
+
+};
